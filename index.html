@@ -155,6 +155,12 @@ table.lbt th{background:none;position:static}table.lbt tr.me td{background:#eef6
 table.lbt{font-size:13px}table.lbt td,table.lbt th{padding:6px 4px}table.lbt th{font-size:11px;white-space:nowrap}
 .cp{border:1px solid var(--line);background:#fff;border-radius:6px;padding:1px 5px;font-size:12px;cursor:pointer;vertical-align:middle}
 .cp:hover{background:#eaf1f8}
+.phrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
+.tel{font-size:17px;font-weight:800;color:var(--blue);text-decoration:none;white-space:nowrap;padding:6px 0}
+.btn.wa.sm2{flex:0 0 auto;padding:7px 14px;font-size:14px;border-radius:9px}
+.compact .og{padding:9px 10px}
+.compact .pick button{padding:10px 8px}
+.compact{padding-bottom:4px}
 /* misc */
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16202c;color:#fff;padding:10px 16px;border-radius:10px;z-index:99;display:none;max-width:90vw;font-size:14px}
 #toast.err{background:var(--red)}
@@ -383,9 +389,9 @@ function leadBody(l){
     <div class="box leadcard">
       <div class="r1"><div style="min-width:0"><div class="lname">${esc(l.name)}${admin ? ' ' + cpBtn(l.name,'Name') : ''}</div><div class="hint">${esc(l.category)}${admin && l.phone ? ' · ' + esc(l.phone) + ' ' + cpBtn(l.phone,'Number') : ''}</div></div>
         ${isDue(l) ? '<span class="badge st-Lost">Follow-up due</span>' : badge(l.status)}</div>
-      <div class="actions">
-        ${l.phone ? `<a class="btn call" ${IN_GAS?'target="_blank"':''} href="tel:${digits(l.phone).replace(/^92/,'+92')}">📞 ${esc(l.phone)}</a>` : `<span class="btn" style="flex:1">No phone number</span>`}
-        ${wa ? `<a class="btn wa" target="_blank" href="https://wa.me/${wa}?text=${msg}">WhatsApp</a>` : ''}
+      <div class="phrow">
+        ${l.phone ? `<a class="tel" ${IN_GAS?'target="_blank"':''} href="tel:${digits(l.phone).replace(/^92/,'+92')}">📞 ${esc(l.phone)}</a>` : `<span class="hint">No phone number</span>`}
+        ${wa ? `<a class="btn wa sm2" target="_blank" href="https://wa.me/${wa}?text=${msg}">WhatsApp</a>` : ''}
       </div>
       ${admin ? `${l.address ? `<div class="kv"><b>Address</b>${esc(l.address)}</div>` : ''}
         ${l.rating!=='' ? `<div class="kv"><b>Google</b>★ ${l.rating} · ${l.reviews} reviews</div>` : ''}
