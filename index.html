@@ -72,7 +72,7 @@ audio{width:100%;margin-top:8px}
 .recs .ri:first-child{border-top:0}
 .hist{white-space:pre-wrap;font-size:13px;color:#344054;max-height:220px;overflow:auto}
 /* login */
-.login{max-width:380px;margin:10vh auto;padding:0 16px}
+.login{max-width:420px;margin:16px auto;padding:0 12px}
 .login .card{background:#fff;border-radius:18px;padding:24px;border:1px solid var(--line)}
 .login h1{margin:0 0 4px;font-size:22px;color:var(--navy)}
 .login p{margin:0 0 16px;color:var(--mute)}
@@ -152,7 +152,8 @@ header.top.slim{padding:10px 14px}
 .earn{color:var(--green);font-weight:700}
 table.lbt{background:none;font-size:14px}table.lbt th,table.lbt td{padding:6px 6px;border-bottom:1px solid var(--line)}
 table.lbt th{background:none;position:static}table.lbt tr.me td{background:#eef6fe}table.lbt tr.tot td{font-weight:800;border-top:2px solid var(--ink);border-bottom:0}
-table.lbt{font-size:13px}table.lbt td,table.lbt th{padding:6px 4px}table.lbt th{font-size:11px;white-space:nowrap}
+table.lbt{font-size:13px}table.lbt td,table.lbt th{padding:6px 4px}
+@media(max-width:400px){table.lbt{font-size:12px}table.lbt th{font-size:10px;letter-spacing:0}table.lbt td,table.lbt th{padding:5px 3px}}table.lbt th{font-size:11px;white-space:nowrap}
 .cp{border:1px solid var(--line);background:#fff;border-radius:6px;padding:1px 5px;font-size:12px;cursor:pointer;vertical-align:middle}
 .cp:hover{background:#eaf1f8}
 .phrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
@@ -234,21 +235,17 @@ async function boot(){
 async function showLogin(msg){
   closeLead();
   const last = getStore('ld_last') || '';
-  $('#app').innerHTML = `<div class="login"><div class="card"><h1>Luma ERP Marketing</h1><p>Sales team login</p>
+  $('#app').innerHTML = `<div class="login"><div id="loginBoard"></div><div class="card"><h1>Luma ERP Marketing</h1><p>Sales team login</p>
     ${msg ? `<div class="notice">${esc(msg)}</div>` : ''}
     <label class="f">Your name</label><input class="in" id="lname" autocomplete="username" autocapitalize="words" value="${esc(last)}" placeholder="Type your name" onkeydown="if(event.key==='Enter')$('#lpin').focus()">
     <label class="f">PIN</label><input class="in" id="lpin" type="password" inputmode="numeric" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     <div style="margin-top:16px"><button class="btn primary" style="width:100%" onclick="doLogin()">Log in</button></div>
-    <button class="btn" style="width:100%;margin-top:10px" onclick="showBoard(this)">🏆 Top performers</button></div>
-    <div id="loginBoard"></div></div>`;
-  (last ? $('#lpin') : $('#lname')).focus();
+    </div></div>`;
+  loadLoginBoard();
+
 }
-async function showBoard(btn){
-  const el = $('#loginBoard');
-  if (el.innerHTML) { el.innerHTML = ''; return; }
-  btn.disabled = true;
-  try { S.board = await api('publicBoard'); el.innerHTML = `<div style="margin-top:12px">${boardHTML()}</div>`; }
-  catch(e){ toast(e.message, true); } finally { btn.disabled = false; }
+async function loadLoginBoard(){
+  try { S.board = await api('publicBoard'); const el = $('#loginBoard'); if (el) el.innerHTML = boardHTML(); } catch(e){}
 }
 async function doLogin(){
   const name = $('#lname').value.trim(), pin = $('#lpin').value.trim();
@@ -337,13 +334,13 @@ function boardHTML(){
     ${top.closed || top.interested ? `<div class="topp"><span class="crown">🥇</span><div style="flex:1"><b>${esc(cap(top.name))}</b> is the top performer
         <div class="tstats"><span><b>${top.closed}</b> closed</span><span><b>${top.interested}</b> interested</span><span class="earn">${rs(top.closed)} earned</span></div></div></div>`
       : '<div class="hint" style="margin-bottom:6px">No interested clients yet — be the first!</div>'}
-    <div style="overflow-x:auto"><table class="lbt"><tr><th>#</th><th>Name</th><th class="num" title="Interested today">Today</th><th class="num" title="Interested total">Int.</th><th class="num">Closed</th><th class="num" title="Commission (Rs)">Rs</th><th class="num" title="Hours worked">Hrs</th></tr>
+    <div style="overflow-x:auto"><table class="lbt"><tr><th>#</th><th>Name</th><th class="num" title="Interested today">Today</th><th class="num">Interested</th><th class="num">Closed</th><th class="num" title="Commission (Rs)">Rs</th><th class="num" title="Hours worked">Hrs</th></tr>
     ${B.map((r,i) => `<tr class="${S.role==='rep' && r.name===S.name ? 'me' : ''}"><td class="hint">${i+1}</td><td><b>${esc(cap(r.name))}</b></td>
       <td class="num">${r.today}</td><td class="num">${r.interested}</td><td class="num"><b>${r.closed}</b></td>
       <td class="num earn">${(r.closed*COMMISSION_PER_LEAD).toLocaleString('en-PK')}</td><td class="num" title="today ${hm(r.minutesToday)}">${hm(r.minutes)}</td></tr>`).join('')}
     <tr class="tot"><td></td><td>Total</td><td class="num">${T.today}</td><td class="num">${T.interested}</td><td class="num">${T.closed}</td><td class="num earn">${(T.closed*COMMISSION_PER_LEAD).toLocaleString('en-PK')}</td><td class="num">${hm(T.minutes)}</td></tr>
     </table></div>
-    <div class="hint" style="margin-top:6px">Today/Int. = interested clients · Rs = commission (Rs ${COMMISSION_PER_LEAD} per closed deal) · Hrs = time worked (h:mm)</div>
+    <div class="hint" style="margin-top:6px">Today/Interested = interested clients · Rs = commission (Rs ${COMMISSION_PER_LEAD} per closed deal) · Hrs = time worked (h:mm)</div>
   </div>`;
 }
 function copyText(t, what){
