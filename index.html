@@ -99,6 +99,41 @@ tr.click:hover td{background:#f7f9fc;cursor:pointer}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:760px){.grid2{grid-template-columns:1fr}}
 .hint{font-size:13px;color:var(--mute)}
+.narrow{max-width:620px}
+.pos{font-size:13px;color:var(--mute);margin:4px 2px 8px}
+.leadcard .lname{font-size:20px;font-weight:800;color:var(--navy)}
+.stickyfoot{position:sticky;bottom:0;margin-bottom:12px;display:flex;gap:8px;padding:10px 0;background:linear-gradient(transparent,var(--bg) 30%);z-index:3}
+.stickyfoot .btn{flex:1;padding:14px}.stickyfoot .btn.primary{flex:2}
+.btn.primary:disabled{background:#9aa9b9;border-color:#9aa9b9}
+.opt{font-weight:500;text-transform:none;letter-spacing:0;color:#98a2b3;margin-left:4px}
+.req{font-weight:700;text-transform:none;letter-spacing:0;color:var(--red);margin-left:4px;font-size:11px}
+.mc{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mcl{display:flex;flex-direction:column;gap:8px}
+.mcr{display:flex}.mcr .og{flex:1;flex-direction:column;justify-content:center;text-align:center}
+.og{display:flex;gap:10px;align-items:center;text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:12px;font-weight:700;font-size:15px;line-height:1.2;width:100%}
+.og small{display:block;font-weight:500;font-size:12px;margin-top:3px;opacity:.75}
+.og .oi{font-size:22px}
+.og.amber{border-color:#f5d9a8;background:#fffaf0;color:#8a4b08}
+.og.red{border-color:#f3c2c2;background:#fff5f5;color:#a61b1b}
+.og.blue{border-color:#bcd9f5;background:#eef6fe;color:#1e5a96}
+.og.on{box-shadow:0 0 0 2px currentColor inset}
+.og.amber.on{background:#fdecc8}.og.red.on{background:#fde0e0}.og.blue.on{background:#d9ebfc}
+.subs{display:flex;gap:6px;flex-wrap:wrap;padding:2px 0 4px 6px;border-left:3px solid var(--line);margin-left:8px}
+.sb{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-weight:600;font-size:14px}
+.sb.amber{border-color:#f0c77e;color:#8a4b08}.sb.amber.on{background:#f59e0b;border-color:#f59e0b;color:#fff}
+.sb.red{border-color:#ef9a9a;color:#b91c1c}.sb.red.on{background:#dc2626;border-color:#dc2626;color:#fff}
+.box.off{opacity:.45;filter:grayscale(1);pointer-events:none}
+.box.need{border-color:#f3c2c2;background:#fffafa}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pick button{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:14px 10px;font-weight:700;font-size:15px}
+.pick button.on{border-color:var(--navy);background:#eaf1f8;box-shadow:0 0 0 1px var(--navy) inset}
+.board .topp{display:flex;gap:10px;align-items:center;background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.board .crown{font-size:28px}
+.lb{display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:8px;font-size:14px}
+.lb.me{background:#eef6fe}
+.lb .rk{width:18px;color:var(--mute);font-weight:700}.lb .nm{width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb .ct{width:24px;text-align:right}.lb .td{width:64px;text-align:right}
+@media(max-width:420px){.og{padding:10px;font-size:14px}.og .oi{font-size:18px}.lb .td{display:none}}
 /* misc */
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16202c;color:#fff;padding:10px 16px;border-radius:10px;z-index:99;display:none;max-width:90vw;font-size:14px}
 #toast.err{background:var(--red)}
@@ -117,7 +152,7 @@ tr.click:hover td{background:#f7f9fc;cursor:pointer}
 <script>
 /* ===== Settings you may edit ===== */
 const API_URL = "https://script.google.com/macros/s/AKfycbyIXLq2uho852EXufu40nFn7O8kPfT92iZwqz1YQfm9dBef-Nl3dRWSE_fhcnGyHsuL/exec";
-const WA_TEMPLATE = "Assalam-o-Alaikum! {rep} from TheRBSolutions. We help Akbari Mandi wholesalers manage stock, udhaar/credit and accounts on one simple system that works on mobile. Can I share a 2-minute demo for {business}?";
+const WA_TEMPLATE = "Assalam-o-Alaikum!\n\nI am {rep}, a Business Development Representative at The RBs Solutions. I'd like to introduce Luma ERP, our all-in-one business management software built on a Python framework trusted by 10,000+ companies worldwide.\n\nStreamline your accounting, inventory, sales and operations in one place with zero per-user licensing fees, for only Rs. 7,500/month.\n\nFree trial for 1 week available.";
 
 /* ===== State ===== */
 const DONE_ST = ['Won','Lost','Dead'];
@@ -205,122 +240,171 @@ function replaceLead(u){ const i = S.leads.findIndex(l => l.id === u.id); if (i 
 
 function renderMain(){ S.role === 'admin' ? renderAdmin() : renderRep(); }
 
-/* ===== Rep view ===== */
-const F = {
-  due: l => isDue(l), todo: l => l.status === 'New', follow: l => l.status === 'Follow-up',
-  hot: l => l.status === 'Interested', done: l => DONE_ST.includes(l.status), all: () => true
+/* ===== Call outcomes (Master card 1 + 2) ===== */
+const GROUPS = {
+  noresp: {label:'No Response', icon:'📵', hint:'Not picking · Busy', cls:'amber', status:'Follow-up',
+           subs:[['Not Picking','No Response - Not Picking'], ['Busy','No Response - Busy']]},
+  neg:    {label:'Negative Response', icon:'👎', hint:'No need · Already using', cls:'red', status:'Lost',
+           subs:[['No Need','Negative - No Need'], ['Already Using Software','Negative - Already Using Software']]},
+  send:   {label:'Send Details', icon:'📨', hint:'Interested — share info', cls:'blue', status:'Interested',
+           subs:[], value:'Send Details'}
 };
+const PICKERS = ['Boss / Owner', 'Other (staff)'];
+const needsPicker = d => d.group === 'neg' || d.group === 'send';
+const draftReady = d => !!d.response && (!needsPicker(d) || !!d.picked);
+
+function newDraft(l){ return {group:'', response:'', picked:'', note:'', followUp:l.followUp || '', rep:l.rep, status:l.status}; }
+
 function matchQ(l, q){ q = q.trim().toLowerCase(); if (!q) return true;
   return [l.name, l.phone, l.category, l.address, l.id].join(' ').toLowerCase().includes(q) || (digits(q) && digits(l.phone).includes(digits(q))); }
 
-function repList(){
-  return S.leads.filter(F[S.repFilter]).filter(l => matchQ(l, S.q)).sort((a,b) =>
-    (isDue(b) - isDue(a)) || (a.followUp||'9').localeCompare(b.followUp||'9') || (b.reviews - a.reviews));
+/* ===== Rep view: one lead at a time ===== */
+function repQueue(){
+  const due = S.leads.filter(isDue).sort((a,b) => a.followUp.localeCompare(b.followUp));
+  const fresh = S.leads.filter(l => l.status === 'New' && !isDue(l)).sort((a,b) => b.reviews - a.reviews);
+  const q = due.concat(fresh);
+  return q;
 }
+function boardHTML(){
+  const B = S.board || [];
+  if (!B.length) return '';
+  const top = B[0], max = Math.max(1, top.interested);
+  return `<div class="box board"><h4>🏆 Leaderboard · interested leads</h4>
+    ${top.interested ? `<div class="topp"><span class="crown">🥇</span><div><b>${esc(cap(top.name))}</b> is the top performer<div class="hint">${top.interested} interested · ${top.today} today</div></div></div>` : '<div class="hint">No interested leads yet — be the first!</div>'}
+    ${B.map((r,i) => `<div class="lb ${S.role==='rep' && r.name===S.name ? 'me' : ''}">
+      <span class="rk">${i+1}</span><span class="nm">${esc(cap(r.name))}</span>
+      <div class="bar" style="flex:1"><i style="width:${Math.round(r.interested/max*100)}%"></i></div>
+      <b class="ct">${r.interested}</b><span class="hint td">+${r.today} today</span></div>`).join('')}
+  </div>`;
+}
+const cap = s => String(s||'').replace(/\b\w/g, c => c.toUpperCase());
+
 function renderRep(){
-  const c = k => S.leads.filter(F[k]).length;
-  const chips = [['due','Due today'],['todo','New'],['follow','Follow-up'],['hot','Interested'],['done','Closed'],['all','All']];
+  const Q = repQueue();
+  let l = Q.find(x => x.id === S.open) || Q[0];
+  if (l && S.open !== l.id) { S.open = l.id; S.draft = newDraft(l); resetRec(); }
+  if (!l) S.open = null;
+  const interested = S.leads.filter(x => x.status === 'Interested' || x.status === 'Won').length;
+  const nextFu = S.leads.filter(x => x.followUp && !DONE_ST.includes(x.status) && x.followUp > S.today).map(x => x.followUp).sort()[0];
   $('#app').innerHTML = `
-  <header class="top"><div><div class="hi">${esc(S.name)}</div>
-    <div class="sub">${c('todo')} new · ${c('due')} due · ${c('hot')} interested</div></div>
-    <div style="white-space:nowrap"><button class="icon" onclick="load()" title="Refresh">⟳</button><button class="icon" onclick="doLogout()" title="Log out">Logout</button></div></header>
-  <div class="wrap">
-    <div class="chips">${chips.map(([k,t]) => `<button class="chip ${S.repFilter===k?'on':''}" onclick="S.repFilter='${k}';renderRep()">${t}<span>${c(k)}</span></button>`).join('')}</div>
-    <input class="search" placeholder="Search name, phone, category…" value="${esc(S.q)}" oninput="S.q=this.value;renderRepList()">
-    <div id="list"></div>
+  <header class="top"><div><div class="hi">${esc(cap(S.name))}</div>
+    <div class="sub">${Q.length} to call · ${S.myCalls||0} calls today · ${interested} interested</div></div>
+    <div style="white-space:nowrap"><button class="icon" onclick="load()" title="Refresh">⟳</button><button class="icon" onclick="doLogout()">Logout</button></div></header>
+  <div class="wrap narrow">
+    ${l ? `<div class="pos">Lead ${Q.indexOf(l)+1} of ${Q.length}${isDue(l) ? ' · <b style="color:var(--red)">Follow-up due</b>' : ''}</div>
+      <div id="leadpane">${leadBody(l)}</div>
+      <div class="stickyfoot"><button class="btn primary" id="savebtn" onclick="saveLead(true)">Save & next →</button></div>`
+    : `<div class="box empty"><div style="font-size:40px">🎉</div><b>All done for now!</b>
+        <div class="hint" style="margin-top:6px">${nextFu ? 'Next follow-ups on ' + fmtDate(nextFu) + '.' : 'No more leads assigned to you.'} Tap ⟳ to check for new leads.</div></div>`}
+    ${boardHTML()}
   </div>`;
-  renderRepList();
+  if (l) { renderCards(); renderRec(); }
 }
-function renderRepList(){
-  const L = repList();
-  $('#list').innerHTML = L.length ? L.map(card).join('') : `<div class="empty">Nothing here 🎉</div>`;
-}
-function card(l){
-  const due = isDue(l);
-  return `<div class="lead" onclick="openLead('${l.id}')">
-    <div class="r1"><b>${esc(l.name)}</b>${badge(l.status)}</div>
-    <div class="meta">${esc(l.category)}${l.rating!==''?` · ★ ${l.rating} (${l.reviews})`:''}</div>
-    <div class="meta">${l.phone ? esc(l.phone) : '<i>No phone</i>'}${l.response ? ' · ' + esc(l.response) : ''}</div>
-    ${l.followUp && !DONE_ST.includes(l.status) ? `<div class="fu ${due?'late':''}">${due?'Due':'Follow-up'} ${fmtDate(l.followUp)}</div>` : ''}
-    ${l.recordings.length ? `<span class="mic">🎙 ${l.recordings.length}</span>` : ''}
-  </div>`;
+/* ===== Shared lead body (rep screen + admin drawer) ===== */
+function leadBody(l){
+  const d = S.draft, wa = waNum(l.phone), admin = S.role === 'admin';
+  const repName = admin ? 'Rameez Butt' : cap(S.name);
+  const msg = encodeURIComponent(WA_TEMPLATE.replace('{rep}', repName).replace('{business}', l.name));
+  return `
+    <div class="box leadcard">
+      <div class="r1"><div><div class="lname">${esc(l.name)}</div><div class="hint">${l.id} · ${esc(l.category)}</div></div>${badge(l.status)}</div>
+      <div class="actions" style="margin:12px 0 8px">
+        ${l.phone ? `<a class="btn call" ${IN_GAS?'target="_blank"':''} href="tel:${digits(l.phone).replace(/^92/,'+92')}">📞 ${esc(l.phone)}</a>` : `<span class="btn" style="flex:1">No phone number</span>`}
+        ${wa ? `<a class="btn wa" target="_blank" href="https://wa.me/${wa}?text=${msg}">WhatsApp</a>` : ''}
+      </div>
+      ${l.address ? `<div class="kv"><b>Address</b>${esc(l.address)}</div>` : ''}
+      ${l.rating!=='' ? `<div class="kv"><b>Google</b>★ ${l.rating} · ${l.reviews} reviews</div>` : ''}
+      <div class="kv"><b>Attempts</b>${l.attempts}${l.updated ? ` · last ${esc(l.updated)} by ${esc(l.updatedBy)}` : ''}</div>
+      ${l.snippet ? `<div class="quote">“${esc(l.snippet)}”</div>` : ''}
+    </div>
+    ${admin ? `<div class="box"><h4>Admin</h4><div class="grid2">
+      <div><label class="f" style="margin-top:0">Assigned to</label><select class="in" onchange="S.draft.rep=this.value">
+        <option value="">— Unassigned —</option>${S.reps.map(r => `<option ${r.name===d.rep?'selected':''}>${esc(r.name)}</option>`).join('')}</select></div>
+      <div><label class="f" style="margin-top:0">Status</label><select class="in" onchange="S.draft.status=this.value">
+        ${S.statuses.map(s => `<option ${s===d.status?'selected':''}>${s}</option>`).join('')}</select></div></div></div>` : ''}
+    <div id="cards"></div>
+    <div class="box"><h4>Note & voice <span class="opt">optional</span></h4>
+      <textarea class="in" placeholder="Anything worth remembering…" oninput="S.draft.note=this.value">${esc(d.note)}</textarea>
+      <div id="recbox" style="margin-top:10px"></div>
+      ${l.recordings.length ? `<div class="recs" style="margin-top:10px">${l.recordings.slice().reverse().map(r => `
+        <div class="ri"><span>🎙 ${esc(r.at)} · ${esc(r.by)}</span><button class="btn sm" onclick="playRec('${r.id}', this)">▶ Play</button></div>`).join('')}
+        <audio id="player" controls style="display:none"></audio></div>` : ''}
+    </div>
+    ${l.notes ? `<div class="box"><h4>History</h4><div class="hist">${esc(l.notes)}</div></div>` : ''}`;
 }
 
-/* ===== Lead drawer (rep + admin) ===== */
+function renderCards(){
+  const box = $('#cards'); if (!box) return;
+  const d = S.draft, g = d.group;
+  const sub = key => GROUPS[key].subs.map(([t,v]) =>
+    `<button class="sb ${GROUPS[key].cls} ${d.response===v?'on':''}" onclick="pickSub('${key}','${v}')">${t}</button>`).join('');
+  const grp = key => { const G = GROUPS[key];
+    return `<button class="og ${G.cls} ${g===key?'on':''}" onclick="pickGroup('${key}')"><span class="oi">${G.icon}</span><span>${G.label}<small>${G.hint}</small></span></button>`; };
+  box.innerHTML = `
+    <div class="box"><h4>1 · Call result</h4>
+      <div class="mc">
+        <div class="mcl">
+          ${grp('noresp')}${g==='noresp' ? `<div class="subs">${sub('noresp')}</div>` : ''}
+          ${grp('neg')}${g==='neg' ? `<div class="subs">${sub('neg')}</div>` : ''}
+        </div>
+        <div class="mcr">${grp('send')}</div>
+      </div>
+      ${g==='noresp' || g==='send' ? `<label class="f">Follow-up date</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <input class="in" id="fu" type="date" style="flex:1;min-width:140px" value="${d.followUp}" onchange="S.draft.followUp=this.value">
+          <button class="btn sm" onclick="setFu(1)">Tomorrow</button><button class="btn sm" onclick="setFu(3)">+3d</button><button class="btn sm" onclick="setFu(7)">+1w</button><button class="btn sm" onclick="setFu(0,true)">Clear</button>
+        </div>` : ''}
+    </div>
+    ${(() => { const off = d.group === 'noresp', need = needsPicker(d) && !d.picked;
+      return `<div class="box ${off ? 'off' : need ? 'need' : ''}"><h4>2 · Who picked up? ${off ? '<span class="opt">not needed — no answer</span>' : '<span class="req">required</span>'}</h4>
+      <div class="pick">${PICKERS.map(p => `<button ${off ? 'disabled' : ''} class="${d.picked===p?'on':''}" onclick="pickWho('${p}')">${p.startsWith('Boss')?'👔':'🧑‍💼'} ${p}</button>`).join('')}</div></div>`; })()}`;
+  const sb = $('#savebtn'); if (sb) sb.disabled = !draftReady(d);
+}
+function pickGroup(key){
+  const d = S.draft, G = GROUPS[key];
+  if (d.group === key && key !== 'send') { d.group = ''; d.response = ''; }
+  else if (d.group === key && key === 'send') { d.group = ''; d.response = ''; }
+  else { d.group = key; d.response = G.value || ''; }
+  if (!needsPicker(d)) d.picked = '';
+  if (d.group === 'noresp' && (!d.followUp || d.followUp < S.today)) d.followUp = addDays(1);
+  if (d.group === 'neg') d.followUp = '';
+  renderCards();
+}
+function pickSub(key, v){ S.draft.group = key; S.draft.response = S.draft.response === v ? '' : v; renderCards(); }
+function pickWho(p){ S.draft.picked = S.draft.picked === p ? '' : p; renderCards(); }
+function setFu(n, clear){ S.draft.followUp = clear ? '' : addDays(n); const f = $('#fu'); if (f) f.value = S.draft.followUp; }
+
+/* ===== Admin drawer ===== */
 function openLead(id){
   const l = lead(id); if (!l) return;
-  S.open = id;
-  S.draft = {response:'', note:'', followUp:l.followUp || '', rep:l.rep, status:l.status};
-  resetRec();
-  renderDrawer();
+  S.open = id; S.draft = newDraft(l); resetRec(); renderDrawer();
 }
-function closeLead(){ stopStream(); resetRec(); S.open = null; $('#drawer').innerHTML = ''; }
-
+function closeLead(){ stopStream(); resetRec(); if (S.role === 'admin') S.open = null; $('#drawer').innerHTML = ''; }
 function renderDrawer(){
   const l = lead(S.open); if (!l) return closeLead();
-  const d = S.draft, wa = waNum(l.phone), admin = S.role === 'admin';
-  const msg = encodeURIComponent(WA_TEMPLATE.replace('{rep}', admin ? 'Team' : S.name).replace('{business}', l.name));
   $('#drawer').innerHTML = `
   <div class="drawer-bg" onclick="closeLead()"></div>
   <div class="drawer">
     <div class="dhead"><button class="icon" onclick="closeLead()">←</button>
-      <div style="flex:1;min-width:0"><div class="dt">${esc(l.name)}</div><div class="ds">${l.id} · ${esc(l.category)}</div></div>${badge(l.status)}</div>
-    <div class="dbody">
-      <div class="actions">
-        ${l.phone ? `<a class="btn call" ${IN_GAS?'target="_blank"':''} href="tel:${digits(l.phone).replace(/^92/,'+92')}">📞 Call ${esc(l.phone)}</a>` : `<span class="btn" style="flex:1">No phone number</span>`}
-        ${wa ? `<a class="btn wa" target="_blank" href="https://wa.me/${wa}?text=${msg}">WhatsApp</a>` : ''}
-      </div>
-      <div class="box">
-        <div class="kv"><b>Phone type</b>${esc(l.phoneType)}</div>
-        ${l.address ? `<div class="kv"><b>Address</b>${esc(l.address)}</div>` : ''}
-        ${l.rating!=='' ? `<div class="kv"><b>Google</b>★ ${l.rating} · ${l.reviews} reviews</div>` : ''}
-        <div class="kv"><b>Attempts</b>${l.attempts}${l.updated ? ` · last ${esc(l.updated)} by ${esc(l.updatedBy)}` : ''}</div>
-        ${l.snippet ? `<div class="quote">“${esc(l.snippet)}”</div>` : ''}
-      </div>
-      ${admin ? `<div class="box"><h4>Admin</h4><div class="grid2">
-        <div><label class="f" style="margin-top:0">Assigned to</label><select class="in" onchange="S.draft.rep=this.value">
-          <option value="">— Unassigned —</option>${S.reps.map(r => `<option ${r.name===d.rep?'selected':''}>${esc(r.name)}</option>`).join('')}</select></div>
-        <div><label class="f" style="margin-top:0">Status</label><select class="in" onchange="S.draft.status=this.value">
-          ${S.statuses.map(s => `<option ${s===d.status?'selected':''}>${s}</option>`).join('')}</select></div></div></div>` : ''}
-      <div class="box"><h4>Call result</h4>
-        <div class="resp" id="resp">${S.responses.map((r,i) => `<button data-i="${i}" class="${d.response===r.label?'on':''}" onclick="pickResp(${i})">${esc(r.label)}<small>→ ${esc(r.status)}</small></button>`).join('')}</div>
-        <label class="f">Follow-up date</label>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <input class="in" id="fu" type="date" style="flex:1;min-width:150px" value="${d.followUp}" onchange="S.draft.followUp=this.value">
-          <button class="btn sm" onclick="setFu(1)">Tomorrow</button><button class="btn sm" onclick="setFu(3)">+3d</button><button class="btn sm" onclick="setFu(7)">+1w</button><button class="btn sm" onclick="setFu(0,true)">Clear</button>
-        </div>
-        <label class="f">Note</label>
-        <textarea class="in" placeholder="What did they say? Who did you talk to?" oninput="S.draft.note=this.value">${esc(d.note)}</textarea>
-      </div>
-      <div class="box"><h4>Voice note / call recording</h4><div id="recbox"></div>
-        ${l.recordings.length ? `<div class="recs" style="margin-top:10px">${l.recordings.slice().reverse().map(r => `
-          <div class="ri"><span>🎙 ${esc(r.at)} · ${esc(r.by)}</span><button class="btn sm" onclick="playRec('${r.id}', this)">▶ Play</button></div>`).join('')}
-          <audio id="player" controls style="display:none"></audio></div>` : ''}
-      </div>
-      ${l.notes ? `<div class="box"><h4>History</h4><div class="hist">${esc(l.notes)}</div></div>` : ''}
-    </div>
+      <div style="flex:1;min-width:0"><div class="dt">${esc(l.name)}</div><div class="ds">${l.id} · ${esc(l.rep || 'Unassigned')}</div></div>${badge(l.status)}</div>
+    <div class="dbody">${leadBody(l)}</div>
     <div class="dfoot"><button class="btn" onclick="saveLead(false)">Save</button><button class="btn primary" onclick="saveLead(true)">Save & next →</button></div>
   </div>`;
-  renderRec();
+  renderCards(); renderRec();
 }
-function pickResp(i){
-  const r = S.responses[i];
-  S.draft.response = S.draft.response === r.label ? '' : r.label;
-  document.querySelectorAll('#resp button').forEach(b => b.classList.toggle('on', S.responses[+b.dataset.i].label === S.draft.response));
-  if (!S.draft.response) return;
-  if (r.status === 'Follow-up' && (!S.draft.followUp || S.draft.followUp < S.today)) setFu(1);
-  if (DONE_ST.includes(r.status)) setFu(0, true);
-}
-function setFu(n, clear){ S.draft.followUp = clear ? '' : addDays(n); const f = $('#fu'); if (f) f.value = S.draft.followUp; }
 
 async function saveLead(next){
   const l = lead(S.open), d = S.draft, admin = S.role === 'admin';
+  if (!l) return;
   if (rec.mr && rec.mr.state === 'recording') return toast('Stop the recording first', true);
+  if (d.group && !d.response) return toast('Choose: ' + GROUPS[d.group].subs.map(x => x[0]).join(' or '), true);
+  if (d.response && needsPicker(d) && !d.picked) return toast('Select who picked up the call', true);
   const adminChange = admin && (d.rep !== l.rep || d.status !== l.status);
   const fuChange = d.followUp !== (l.followUp || '');
-  if (!d.response && !d.note.trim() && !rec.blob && !adminChange && !fuChange) return toast('Pick a call result, add a note or record', true);
+  if (!admin && !d.response) return toast('Select the call result first', true);
+  if (admin && !d.response && !d.note.trim() && !rec.blob && !adminChange && !fuChange) return toast('Nothing to save', true);
 
-  const list = (admin ? adminList() : repList()).map(x => x.id);
+  const list = admin ? adminList().map(x => x.id) : [];
   const nextId = list[list.indexOf(l.id) + 1];
   busy(true);
   try {
@@ -329,13 +413,18 @@ async function saveLead(next){
       replaceLead(await api('uploadRecording', S.token, l.id, b64, rec.blob.type || 'audio/webm'));
     }
     if (d.response || d.note.trim() || adminChange || fuChange) {
-      const payload = {response:d.response, note:d.note, followUp:d.followUp};
+      const payload = {response:d.response, note:d.note, followUp:d.followUp, pickedBy:d.picked};
       if (adminChange) { payload.rep = d.rep; payload.status = d.status; }
       replaceLead(await api('saveUpdate', S.token, l.id, payload));
     }
-    toast('Saved ✓');
-    closeLead();
-    renderMain();
+    if (d.response === 'Send Details') toast('🎉 Interested lead saved!'); else toast('Saved ✓');
+    if (!admin) {
+      S.myCalls = (S.myCalls||0) + (d.response ? 1 : 0);
+      if (d.response === 'Send Details') { const me = (S.board||[]).find(r => r.name === S.name); if (me) { me.interested++; me.today++; S.board.sort((a,b) => b.interested - a.interested || b.today - a.today); } }
+      resetRec(); S.open = null; renderRep(); window.scrollTo(0,0);
+      return;
+    }
+    closeLead(); renderMain();
     if (next && nextId && lead(nextId)) openLead(nextId);
   } catch(e){ toast(e.message, true); } finally { busy(false); }
 }
@@ -442,6 +531,7 @@ function paneDash(){
        ['Interested',n(l=>l.status==='Interested')],['Won',n(l=>l.status==='Won')],['Calls logged today',Object.values(S.activity).reduce((a,b)=>a+b,0)]]
       .map(([l,v]) => `<div class="kpi"><div class="n">${v}</div><div class="l">${l}</div></div>`).join('')}
   </div>
+  ${boardHTML()}
   <div class="box"><h4>Auto-assign</h4>
     <div class="recrow"><button class="btn primary" onclick="doAssign()" ${unassigned.length?'':'disabled'}>Assign ${unPhone} unassigned leads (round-robin)</button>
     <label class="hint"><input type="checkbox" id="incNo"> also assign ${unassigned.length - unPhone} leads with no phone</label></div>
