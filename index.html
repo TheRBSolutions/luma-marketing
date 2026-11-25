@@ -164,18 +164,16 @@ async function boot(){
 }
 async function showLogin(){
   closeLead();
+  const last = getStore('ld_last') || '';
   $('#app').innerHTML = `<div class="login"><div class="card"><h1>Luma ERP Marketing</h1><p>Sales team login</p>
-    <label class="f">Your name</label><select class="in" id="lname"><option>Loading…</option></select>
+    <label class="f">Your name</label><input class="in" id="lname" autocomplete="username" autocapitalize="words" value="${esc(last)}" placeholder="Type your name" onkeydown="if(event.key==='Enter')$('#lpin').focus()">
     <label class="f">PIN</label><input class="in" id="lpin" type="password" inputmode="numeric" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     <div style="margin-top:16px"><button class="btn primary" style="width:100%" onclick="doLogin()">Log in</button></div></div></div>`;
-  try {
-    const names = await api('getLoginNames');
-    const last = getStore('ld_last');
-    $('#lname').innerHTML = names.map(n => `<option ${n===last?'selected':''}>${esc(n)}</option>`).join('');
-  } catch(e){ toast(e.message, true); }
+  (last ? $('#lpin') : $('#lname')).focus();
 }
 async function doLogin(){
-  const name = $('#lname').value, pin = $('#lpin').value;
+  const name = $('#lname').value.trim(), pin = $('#lpin').value.trim();
+  if (!name) return toast('Enter your name', true);
   if (!pin) return toast('Enter your PIN', true);
   busy(true);
   try {
