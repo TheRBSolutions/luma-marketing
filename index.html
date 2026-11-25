@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Luma ERP Marketing</title>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<style>
+:root{--navy:#1f3b57;--navy2:#2b5279;--bg:#f3f5f8;--card:#fff;--ink:#16202c;--mute:#667085;--line:#e3e8ef;
+--green:#15803d;--amber:#b45309;--red:#b91c1c;--blue:#1d4ed8;--gray:#475467;--wa:#128c4a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.wrap{max-width:1100px;margin:0 auto;padding:12px}
+header.top{background:var(--navy);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:5}
+header .hi{font-weight:700;font-size:17px}
+header .sub{font-size:13px;opacity:.8}
+.icon{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:10px;padding:8px 12px;margin-left:6px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 14px;font-weight:600;text-decoration:none;color:var(--ink)}
+.btn.primary{background:var(--navy);border-color:var(--navy);color:#fff}
+.btn.call{background:var(--blue);border-color:var(--blue);color:#fff;flex:1}
+.btn.wa{background:var(--wa);border-color:var(--wa);color:#fff;flex:1}
+.btn.rec{background:var(--red);border-color:var(--red);color:#fff}
+.btn.sm{padding:6px 10px;font-size:13px}
+.btn:disabled{opacity:.5}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px}
+.chip{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;font-weight:600;font-size:14px}
+.chip span{color:var(--mute);font-weight:500;margin-left:4px}
+.chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.chip.on span{color:#cfe0f2}
+.search{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;margin-bottom:10px}
+.lead{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;cursor:pointer;position:relative}
+.lead:active{background:#f7f9fc}
+.r1{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.meta{color:var(--mute);font-size:13px;margin-top:3px}
+.fu{font-size:12px;font-weight:700;color:var(--amber);margin-top:5px}
+.fu.late{color:var(--red)}
+.mic{position:absolute;right:12px;bottom:10px;font-size:12px;color:var(--mute)}
+.badge{font-size:12px;font-weight:700;border-radius:999px;padding:3px 9px;white-space:nowrap}
+.st-New{background:#e8eefb;color:#2b4a8b}.st-Followup{background:#fff3df;color:var(--amber)}
+.st-Interested{background:#e1ecff;color:var(--blue)}.st-Won{background:#dcf5e5;color:var(--green)}
+.st-Lost{background:#fde7e7;color:var(--red)}.st-Dead{background:#eceef1;color:var(--gray)}
+.empty{text-align:center;color:var(--mute);padding:40px 10px}
+/* drawer */
+.drawer-bg{position:fixed;inset:0;background:rgba(10,20,30,.45);z-index:20}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(520px,100%);background:var(--bg);z-index:21;display:flex;flex-direction:column}
+.dhead{background:var(--navy);color:#fff;padding:12px 14px;display:flex;gap:10px;align-items:center}
+.dhead .icon{margin:0}
+.dt{font-weight:700;font-size:17px}.ds{font-size:12px;opacity:.8}
+.dbody{flex:1;overflow-y:auto;padding:14px}
+.dfoot{display:flex;gap:8px;padding:10px 14px;background:#fff;border-top:1px solid var(--line)}
+.dfoot .btn{flex:1}
+.box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.box h4{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute)}
+.kv{display:flex;gap:8px;font-size:14px;margin:4px 0}.kv b{min-width:78px;color:var(--mute);font-weight:500}
+.quote{font-style:italic;color:#344054;background:#f7f8fa;border-radius:8px;padding:8px 10px;margin-top:8px;font-size:14px}
+.actions{display:flex;gap:8px;margin-bottom:12px}
+.resp{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.resp button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:10px 8px;text-align:left;font-size:14px;font-weight:600;line-height:1.2}
+.resp button small{display:block;font-weight:500;color:var(--mute);font-size:11px;margin-top:2px}
+.resp button.on{border-color:var(--navy);background:#eaf1f8;box-shadow:inset 0 0 0 1px var(--navy)}
+label.f{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
+input.in,select.in,textarea.in{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+textarea.in{min-height:70px;resize:vertical}
+.recrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--red);animation:p 1s infinite}
+@keyframes p{50%{opacity:.2}}
+.timer{font-variant-numeric:tabular-nums;font-weight:700}
+audio{width:100%;margin-top:8px}
+.recs .ri{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.recs .ri:first-child{border-top:0}
+.hist{white-space:pre-wrap;font-size:13px;color:#344054;max-height:220px;overflow:auto}
+/* login */
+.login{max-width:380px;margin:10vh auto;padding:0 16px}
+.login .card{background:#fff;border-radius:18px;padding:24px;border:1px solid var(--line)}
+.login h1{margin:0 0 4px;font-size:22px;color:var(--navy)}
+.login p{margin:0 0 16px;color:var(--mute)}
+/* admin */
+.tabs{display:flex;gap:4px;background:#fff;border-bottom:1px solid var(--line);padding:0 12px;overflow-x:auto;position:sticky;top:58px;z-index:4}
+.tab{border:0;background:none;padding:12px 14px;font-weight:600;color:var(--mute);border-bottom:3px solid transparent;white-space:nowrap}
+.tab.on{color:var(--navy);border-color:var(--navy)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.kpi .n{font-size:26px;font-weight:800;color:var(--navy)}
+.kpi .l{font-size:13px;color:var(--mute)}
+table{width:100%;border-collapse:collapse;background:#fff;font-size:14px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:#f7f9fc;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--mute);position:sticky;top:0}
+tr.click:hover td{background:#f7f9fc;cursor:pointer}
+.tbl{overflow:auto;border:1px solid var(--line);border-radius:14px;max-height:70vh}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.bar{height:8px;background:#eef2f6;border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--navy2)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.toolbar .in{width:auto;min-width:150px;flex:0 1 auto}
+.toolbar .grow{flex:1 1 200px}
+.bulk{background:#eaf1f8;border:1px solid #c9d9ea;border-radius:12px;padding:8px 10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+.hint{font-size:13px;color:var(--mute)}
+/* misc */
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16202c;color:#fff;padding:10px 16px;border-radius:10px;z-index:99;display:none;max-width:90vw;font-size:14px}
+#toast.err{background:var(--red)}
+#busy{position:fixed;inset:0;background:rgba(255,255,255,.55);z-index:98;display:none;align-items:center;justify-content:center}
+.spin{width:36px;height:36px;border:4px solid #c9d9ea;border-top-color:var(--navy);border-radius:50%;animation:s .8s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="drawer"></div>
+<div id="toast"></div>
+<div id="busy"><div class="spin"></div></div>
+<input type="file" id="fileRec" accept="audio/*" capture style="display:none" onchange="pickFile(this)">
+
+<script>
+/* ===== Settings you may edit ===== */
+const API_URL = "https://script.google.com/macros/s/AKfycbyIXLq2uho852EXufu40nFn7O8kPfT92iZwqz1YQfm9dBef-Nl3dRWSE_fhcnGyHsuL/exec";
+const WA_TEMPLATE = "Assalam-o-Alaikum! {rep} from TheRBSolutions. We help Akbari Mandi wholesalers manage stock, udhaar/credit and accounts on one simple system that works on mobile. Can I share a 2-minute demo for {business}?";
+
+/* ===== State ===== */
+const DONE_ST = ['Won','Lost','Dead'];
+const S = {token:null, role:null, name:null, leads:[], responses:[], reps:[], statuses:[], today:'', activity:{},
+  repFilter:null, q:'', tab:'dash', af:{rep:'',status:'',q:''}, sel:new Set(), open:null, draft:null, audioCache:{}};
+const rec = {mr:null, chunks:[], blob:null, url:null, t0:0, timer:null};
+
+/* ===== Utils ===== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const digits = p => String(p||'').replace(/\D/g,'');
+const badge = s => s ? `<span class="badge st-${String(s).replace(/\W/g,'')}">${esc(s)}</span>` : '';
+const isDue = l => !DONE_ST.includes(l.status) && l.followUp && l.followUp <= S.today;
+const lead = id => S.leads.find(l => l.id === id);
+const statusOf = label => (S.responses.find(r => r.label === label) || {}).status || '';
+function fmtDate(d){ if(!d) return ''; const [y,m,dd]=d.split('-'); return new Date(+y,+m-1,+dd).toLocaleDateString('en-GB',{day:'numeric',month:'short'}); }
+function addDays(n){ const d=new Date(S.today+'T00:00:00'); d.setDate(d.getDate()+n); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function waNum(p){ let d=digits(p); if(!d) return ''; if(d.startsWith('0')) d='92'+d.slice(1); if(!d.startsWith('92')) d='92'+d; return /^923\d{9}$/.test(d) ? d : ''; }
+function toast(m, err){ const t=$('#toast'); t.textContent=m; t.className=err?'err':''; t.style.display='block'; clearTimeout(t._h); t._h=setTimeout(()=>t.style.display='none', err?4500:2200); }
+function busy(on){ $('#busy').style.display = on ? 'flex' : 'none'; }
+function store(k,v){ try{ v===null?localStorage.removeItem(k):localStorage.setItem(k,v); }catch(e){} }
+function getStore(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+
+const IN_GAS = !!(window.google && google.script && google.script.run);
+function api(fn, ...args){
+  const fail = msg => {
+    msg = String(msg || 'Error').replace(/^Error:\s*/,'');
+    if (msg.includes('SESSION_EXPIRED')) { toast('Session expired — please log in again', true); doLogout(true); }
+    return new Error(msg);
+  };
+  if (IN_GAS) return new Promise((res, rej) => {
+    google.script.run.withSuccessHandler(res).withFailureHandler(e => rej(fail((e && e.message) || e)))[fn](...args);
+  });
+  return fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({fn, args})})
+    .then(r => r.json(), () => { throw fail('No internet / server not reachable'); })
+    .then(j => { if (!j.ok) throw fail(j.error); return j.data; });
+}
+
+/* ===== Auth ===== */
+async function boot(){
+  const saved = getStore('ld_session');
+  if (saved) { try { Object.assign(S, JSON.parse(saved)); await load(); return; } catch(e){} }
+  showLogin();
+}
+async function showLogin(){
+  closeLead();
+  $('#app').innerHTML = `<div class="login"><div class="card"><h1>Luma ERP Marketing</h1><p>Sales team login</p>
+    <label class="f">Your name</label><select class="in" id="lname"><option>Loading…</option></select>
+    <label class="f">PIN</label><input class="in" id="lpin" type="password" inputmode="numeric" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <div style="margin-top:16px"><button class="btn primary" style="width:100%" onclick="doLogin()">Log in</button></div></div></div>`;
+  try {
+    const names = await api('getLoginNames');
+    const last = getStore('ld_last');
+    $('#lname').innerHTML = names.map(n => `<option ${n===last?'selected':''}>${esc(n)}</option>`).join('');
+  } catch(e){ toast(e.message, true); }
+}
+async function doLogin(){
+  const name = $('#lname').value, pin = $('#lpin').value;
+  if (!pin) return toast('Enter your PIN', true);
+  busy(true);
+  try {
+    const r = await api('login', name, pin);
+    Object.assign(S, r);
+    store('ld_session', JSON.stringify({token:r.token, role:r.role, name:r.name}));
+    store('ld_last', name);
+    await load();
+  } catch(e){ toast(e.message, true); } finally { busy(false); }
+}
+function doLogout(silent){
+  if (!silent && S.token) api('logout', S.token).catch(() => {});
+  store('ld_session', null);
+  S.token = null; S.role = null; S.leads = [];
+  showLogin();
+}
+
+/* ===== Data ===== */
+async function load(){
+  busy(true);
+  try {
+    const d = await api(S.role === 'admin' ? 'getAdminData' : 'getRepData', S.token);
+    Object.assign(S, d);
+    if (!S.repFilter) S.repFilter = S.leads.some(isDue) ? 'due' : 'todo';
+    renderMain();
+  } finally { busy(false); }
+}
+function replaceLead(u){ const i = S.leads.findIndex(l => l.id === u.id); if (i > -1) S.leads[i] = u; else S.leads.push(u); }
+
+function renderMain(){ S.role === 'admin' ? renderAdmin() : renderRep(); }
+
+/* ===== Rep view ===== */
+const F = {
+  due: l => isDue(l), todo: l => l.status === 'New', follow: l => l.status === 'Follow-up',
+  hot: l => l.status === 'Interested', done: l => DONE_ST.includes(l.status), all: () => true
+};
+function matchQ(l, q){ q = q.trim().toLowerCase(); if (!q) return true;
+  return [l.name, l.phone, l.category, l.address, l.id].join(' ').toLowerCase().includes(q) || (digits(q) && digits(l.phone).includes(digits(q))); }
+
+function repList(){
+  return S.leads.filter(F[S.repFilter]).filter(l => matchQ(l, S.q)).sort((a,b) =>
+    (isDue(b) - isDue(a)) || (a.followUp||'9').localeCompare(b.followUp||'9') || (b.reviews - a.reviews));
+}
+function renderRep(){
+  const c = k => S.leads.filter(F[k]).length;
+  const chips = [['due','Due today'],['todo','New'],['follow','Follow-up'],['hot','Interested'],['done','Closed'],['all','All']];
+  $('#app').innerHTML = `
+  <header class="top"><div><div class="hi">${esc(S.name)}</div>
+    <div class="sub">${c('todo')} new · ${c('due')} due · ${c('hot')} interested</div></div>
+    <div style="white-space:nowrap"><button class="icon" onclick="load()" title="Refresh">⟳</button><button class="icon" onclick="doLogout()" title="Log out">Logout</button></div></header>
+  <div class="wrap">
+    <div class="chips">${chips.map(([k,t]) => `<button class="chip ${S.repFilter===k?'on':''}" onclick="S.repFilter='${k}';renderRep()">${t}<span>${c(k)}</span></button>`).join('')}</div>
+    <input class="search" placeholder="Search name, phone, category…" value="${esc(S.q)}" oninput="S.q=this.value;renderRepList()">
+    <div id="list"></div>
+  </div>`;
+  renderRepList();
+}
+function renderRepList(){
+  const L = repList();
+  $('#list').innerHTML = L.length ? L.map(card).join('') : `<div class="empty">Nothing here 🎉</div>`;
+}
+function card(l){
+  const due = isDue(l);
+  return `<div class="lead" onclick="openLead('${l.id}')">
+    <div class="r1"><b>${esc(l.name)}</b>${badge(l.status)}</div>
+    <div class="meta">${esc(l.category)}${l.rating!==''?` · ★ ${l.rating} (${l.reviews})`:''}</div>
+    <div class="meta">${l.phone ? esc(l.phone) : '<i>No phone</i>'}${l.response ? ' · ' + esc(l.response) : ''}</div>
+    ${l.followUp && !DONE_ST.includes(l.status) ? `<div class="fu ${due?'late':''}">${due?'Due':'Follow-up'} ${fmtDate(l.followUp)}</div>` : ''}
+    ${l.recordings.length ? `<span class="mic">🎙 ${l.recordings.length}</span>` : ''}
+  </div>`;
+}
+
+/* ===== Lead drawer (rep + admin) ===== */
+function openLead(id){
+  const l = lead(id); if (!l) return;
+  S.open = id;
+  S.draft = {response:'', note:'', followUp:l.followUp || '', rep:l.rep, status:l.status};
+  resetRec();
+  renderDrawer();
+}
+function closeLead(){ stopStream(); resetRec(); S.open = null; $('#drawer').innerHTML = ''; }
+
+function renderDrawer(){
+  const l = lead(S.open); if (!l) return closeLead();
+  const d = S.draft, wa = waNum(l.phone), admin = S.role === 'admin';
+  const msg = encodeURIComponent(WA_TEMPLATE.replace('{rep}', admin ? 'Team' : S.name).replace('{business}', l.name));
+  $('#drawer').innerHTML = `
+  <div class="drawer-bg" onclick="closeLead()"></div>
+  <div class="drawer">
+    <div class="dhead"><button class="icon" onclick="closeLead()">←</button>
+      <div style="flex:1;min-width:0"><div class="dt">${esc(l.name)}</div><div class="ds">${l.id} · ${esc(l.category)}</div></div>${badge(l.status)}</div>
+    <div class="dbody">
+      <div class="actions">
+        ${l.phone ? `<a class="btn call" ${IN_GAS?'target="_blank"':''} href="tel:${digits(l.phone).replace(/^92/,'+92')}">📞 Call ${esc(l.phone)}</a>` : `<span class="btn" style="flex:1">No phone number</span>`}
+        ${wa ? `<a class="btn wa" target="_blank" href="https://wa.me/${wa}?text=${msg}">WhatsApp</a>` : ''}
+      </div>
+      <div class="box">
+        <div class="kv"><b>Phone type</b>${esc(l.phoneType)}</div>
+        ${l.address ? `<div class="kv"><b>Address</b>${esc(l.address)}</div>` : ''}
+        ${l.rating!=='' ? `<div class="kv"><b>Google</b>★ ${l.rating} · ${l.reviews} reviews</div>` : ''}
+        <div class="kv"><b>Attempts</b>${l.attempts}${l.updated ? ` · last ${esc(l.updated)} by ${esc(l.updatedBy)}` : ''}</div>
+        ${l.snippet ? `<div class="quote">“${esc(l.snippet)}”</div>` : ''}
+      </div>
+      ${admin ? `<div class="box"><h4>Admin</h4><div class="grid2">
+        <div><label class="f" style="margin-top:0">Assigned to</label><select class="in" onchange="S.draft.rep=this.value">
+          <option value="">— Unassigned —</option>${S.reps.map(r => `<option ${r.name===d.rep?'selected':''}>${esc(r.name)}</option>`).join('')}</select></div>
+        <div><label class="f" style="margin-top:0">Status</label><select class="in" onchange="S.draft.status=this.value">
+          ${S.statuses.map(s => `<option ${s===d.status?'selected':''}>${s}</option>`).join('')}</select></div></div></div>` : ''}
+      <div class="box"><h4>Call result</h4>
+        <div class="resp" id="resp">${S.responses.map((r,i) => `<button data-i="${i}" class="${d.response===r.label?'on':''}" onclick="pickResp(${i})">${esc(r.label)}<small>→ ${esc(r.status)}</small></button>`).join('')}</div>
+        <label class="f">Follow-up date</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <input class="in" id="fu" type="date" style="flex:1;min-width:150px" value="${d.followUp}" onchange="S.draft.followUp=this.value">
+          <button class="btn sm" onclick="setFu(1)">Tomorrow</button><button class="btn sm" onclick="setFu(3)">+3d</button><button class="btn sm" onclick="setFu(7)">+1w</button><button class="btn sm" onclick="setFu(0,true)">Clear</button>
+        </div>
+        <label class="f">Note</label>
+        <textarea class="in" placeholder="What did they say? Who did you talk to?" oninput="S.draft.note=this.value">${esc(d.note)}</textarea>
+      </div>
+      <div class="box"><h4>Voice note / call recording</h4><div id="recbox"></div>
+        ${l.recordings.length ? `<div class="recs" style="margin-top:10px">${l.recordings.slice().reverse().map(r => `
+          <div class="ri"><span>🎙 ${esc(r.at)} · ${esc(r.by)}</span><button class="btn sm" onclick="playRec('${r.id}', this)">▶ Play</button></div>`).join('')}
+          <audio id="player" controls style="display:none"></audio></div>` : ''}
+      </div>
+      ${l.notes ? `<div class="box"><h4>History</h4><div class="hist">${esc(l.notes)}</div></div>` : ''}
+    </div>
+    <div class="dfoot"><button class="btn" onclick="saveLead(false)">Save</button><button class="btn primary" onclick="saveLead(true)">Save & next →</button></div>
+  </div>`;
+  renderRec();
+}
+function pickResp(i){
+  const r = S.responses[i];
+  S.draft.response = S.draft.response === r.label ? '' : r.label;
+  document.querySelectorAll('#resp button').forEach(b => b.classList.toggle('on', S.responses[+b.dataset.i].label === S.draft.response));
+  if (!S.draft.response) return;
+  if (r.status === 'Follow-up' && (!S.draft.followUp || S.draft.followUp < S.today)) setFu(1);
+  if (DONE_ST.includes(r.status)) setFu(0, true);
+}
+function setFu(n, clear){ S.draft.followUp = clear ? '' : addDays(n); const f = $('#fu'); if (f) f.value = S.draft.followUp; }
+
+async function saveLead(next){
+  const l = lead(S.open), d = S.draft, admin = S.role === 'admin';
+  if (rec.mr && rec.mr.state === 'recording') return toast('Stop the recording first', true);
+  const adminChange = admin && (d.rep !== l.rep || d.status !== l.status);
+  const fuChange = d.followUp !== (l.followUp || '');
+  if (!d.response && !d.note.trim() && !rec.blob && !adminChange && !fuChange) return toast('Pick a call result, add a note or record', true);
+
+  const list = (admin ? adminList() : repList()).map(x => x.id);
+  const nextId = list[list.indexOf(l.id) + 1];
+  busy(true);
+  try {
+    if (rec.blob) {
+      const b64 = await blobToB64(rec.blob);
+      replaceLead(await api('uploadRecording', S.token, l.id, b64, rec.blob.type || 'audio/webm'));
+    }
+    if (d.response || d.note.trim() || adminChange || fuChange) {
+      const payload = {response:d.response, note:d.note, followUp:d.followUp};
+      if (adminChange) { payload.rep = d.rep; payload.status = d.status; }
+      replaceLead(await api('saveUpdate', S.token, l.id, payload));
+    }
+    toast('Saved ✓');
+    closeLead();
+    renderMain();
+    if (next && nextId && lead(nextId)) openLead(nextId);
+  } catch(e){ toast(e.message, true); } finally { busy(false); }
+}
+
+/* ===== Recording ===== */
+function resetRec(){ if (rec.url) URL.revokeObjectURL(rec.url); clearInterval(rec.timer); Object.assign(rec, {chunks:[], blob:null, url:null, timer:null}); }
+function stopStream(){ try { if (rec.mr && rec.mr.state === 'recording') { rec.mr.onstop = null; rec.mr.stop(); } if (rec.stream) rec.stream.getTracks().forEach(t => t.stop()); } catch(e){} rec.mr = null; rec.stream = null; }
+function renderRec(){
+  const b = $('#recbox'); if (!b) return;
+  if (rec.mr && rec.mr.state === 'recording') {
+    b.innerHTML = `<div class="recrow"><span class="dot"></span><span class="timer" id="rt">0:00</span><button class="btn rec" onclick="stopRec()">■ Stop</button></div>`;
+  } else if (rec.blob) {
+    b.innerHTML = `<div class="hint">New recording — will upload when you press Save.</div><audio controls src="${rec.url}"></audio>
+      <div class="recrow" style="margin-top:6px"><button class="btn sm" onclick="resetRec();renderRec()">✕ Discard</button><button class="btn sm" onclick="startRec()">↺ Re-record</button></div>`;
+  } else {
+    b.innerHTML = `<div class="recrow"><button class="btn rec" onclick="startRec()">● Record</button>
+      <button class="btn" onclick="$('#fileRec').click()">⤒ Upload audio file</button></div>
+      <div class="hint" style="margin-top:6px">Record a summary after the call, or upload the phone's call recording.</div>`;
+  }
+}
+async function startRec(){
+  resetRec();
+  if (!navigator.mediaDevices || !window.MediaRecorder) { toast('Recording not supported here — upload an audio file instead', true); return $('#fileRec').click(); }
+  try {
+    rec.stream = await navigator.mediaDevices.getUserMedia({audio:true});
+  } catch(e) {
+    toast(IN_GAS ? 'Mic is blocked inside Google Apps Script — open the hosted app link, or upload an audio file' : 'Microphone blocked — allow mic access in the browser, or upload an audio file', true);
+    return;
+  }
+  const type = ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg'].find(t => MediaRecorder.isTypeSupported(t));
+  rec.mr = new MediaRecorder(rec.stream, type ? {mimeType:type} : {});
+  rec.chunks = [];
+  rec.mr.ondataavailable = e => e.data.size && rec.chunks.push(e.data);
+  rec.mr.onstop = () => {
+    rec.stream.getTracks().forEach(t => t.stop());
+    rec.blob = new Blob(rec.chunks, {type:(rec.mr.mimeType || 'audio/webm').split(';')[0]});
+    rec.url = URL.createObjectURL(rec.blob);
+    clearInterval(rec.timer); rec.mr = null; renderRec();
+  };
+  rec.mr.start(1000);
+  rec.t0 = Date.now();
+  renderRec();
+  rec.timer = setInterval(() => {
+    const s = Math.floor((Date.now() - rec.t0) / 1000), t = $('#rt');
+    if (t) t.textContent = Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
+    if (s >= 600) stopRec();                 // 10 min cap
+  }, 500);
+}
+function stopRec(){ if (rec.mr && rec.mr.state === 'recording') rec.mr.stop(); }
+function pickFile(inp){
+  const f = inp.files[0]; inp.value = '';
+  if (!f) return;
+  if (f.size > 25 * 1024 * 1024) return toast('File too large (max 25 MB)', true);
+  resetRec();
+  rec.blob = f.type ? f : new Blob([f], {type:'audio/mpeg'});
+  rec.url = URL.createObjectURL(rec.blob);
+  renderRec();
+}
+function blobToB64(b){ return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(b); }); }
+async function playRec(id, btn){
+  const p = $('#player'); if (!p) return;
+  if (!S.audioCache[id]) {
+    btn.disabled = true; btn.textContent = 'Loading…';
+    try { const r = await api('getRecording', S.token, id); S.audioCache[id] = `data:${r.mime};base64,${r.b64}`; }
+    catch(e){ toast(e.message, true); btn.disabled = false; btn.textContent = '▶ Play'; return; }
+    btn.disabled = false; btn.textContent = '▶ Play';
+  }
+  p.style.display = 'block'; p.src = S.audioCache[id]; p.play().catch(() => {});
+}
+
+/* ===== Admin ===== */
+function renderAdmin(){
+  const tabs = [['dash','Dashboard'],['leads','All leads'],['add','Add leads'],['team','Team']];
+  $('#app').innerHTML = `
+  <header class="top"><div><div class="hi">Luma ERP Marketing · Admin</div><div class="sub">${S.leads.length} leads · ${S.reps.filter(r=>r.active).length} active reps</div></div>
+    <div style="white-space:nowrap"><button class="icon" onclick="load()">⟳</button><button class="icon" onclick="doLogout()">Logout</button></div></header>
+  <div class="tabs">${tabs.map(([k,t]) => `<button class="tab ${S.tab===k?'on':''}" onclick="S.tab='${k}';renderAdmin()">${t}</button>`).join('')}</div>
+  <div class="wrap" id="pane"></div>`;
+  ({dash:paneDash, leads:paneLeads, add:paneAdd, team:paneTeam})[S.tab]();
+}
+
+function paneDash(){
+  const L = S.leads, n = f => L.filter(f).length;
+  const unassigned = L.filter(l => !l.rep && !DONE_ST.includes(l.status));
+  const unPhone = unassigned.filter(l => digits(l.phone)).length;
+  const reps = S.reps.map(r => r.name);
+  L.forEach(l => { if (l.rep && !reps.includes(l.rep)) reps.push(l.rep); });
+  const rows = reps.map(name => {
+    const M = L.filter(l => l.rep === name);
+    return {name, active:(S.reps.find(r=>r.name===name)||{}).active,
+      total:M.length, fresh:M.filter(l=>l.status==='New').length, due:M.filter(isDue).length,
+      fol:M.filter(l=>l.status==='Follow-up').length, hot:M.filter(l=>l.status==='Interested').length,
+      won:M.filter(l=>l.status==='Won').length, lost:M.filter(l=>['Lost','Dead'].includes(l.status)).length,
+      recs:M.reduce((a,l)=>a+l.recordings.length,0), today:S.activity[name]||0,
+      done:M.filter(l=>l.status!=='New').length};
+  });
+  S._dashReps = rows.map(r => r.name);
+  const rc = {}; L.forEach(l => { if (l.response) rc[l.response] = (rc[l.response]||0) + 1; });
+  const rcs = Object.entries(rc).sort((a,b) => b[1]-a[1]), max = rcs.length ? rcs[0][1] : 1;
+
+  $('#pane').innerHTML = `
+  <div class="kpis">
+    ${[['Total leads',L.length],['Unassigned',unassigned.length],['Not called yet',n(l=>l.status==='New')],['Follow-ups due',n(isDue)],
+       ['Interested',n(l=>l.status==='Interested')],['Won',n(l=>l.status==='Won')],['Calls logged today',Object.values(S.activity).reduce((a,b)=>a+b,0)]]
+      .map(([l,v]) => `<div class="kpi"><div class="n">${v}</div><div class="l">${l}</div></div>`).join('')}
+  </div>
+  <div class="box"><h4>Auto-assign</h4>
+    <div class="recrow"><button class="btn primary" onclick="doAssign()" ${unassigned.length?'':'disabled'}>Assign ${unPhone} unassigned leads (round-robin)</button>
+    <label class="hint"><input type="checkbox" id="incNo"> also assign ${unassigned.length - unPhone} leads with no phone</label></div>
+    <div class="hint" style="margin-top:6px">Each lead goes to the active rep with the fewest open leads, so the team stays balanced.</div></div>
+  <div class="box"><h4>Team performance</h4><div class="tbl" style="max-height:none"><table>
+    <tr><th>Rep</th><th class="num">Assigned</th><th class="num">Not called</th><th class="num">Due</th><th class="num">Follow-up</th><th class="num">Interested</th><th class="num">Won</th><th class="num">Lost/Dead</th><th class="num">🎙</th><th class="num">Calls today</th><th style="min-width:110px">Progress</th></tr>
+    ${rows.map((r,i) => `<tr class="click" onclick="S.tab='leads';S.af={rep:S._dashReps[${i}],status:'',q:''};renderAdmin()">
+      <td><b>${esc(r.name)}</b>${r.active===false?' <span class="hint">(inactive)</span>':''}</td><td class="num">${r.total}</td><td class="num">${r.fresh}</td>
+      <td class="num" style="color:${r.due?'var(--red)':''}">${r.due}</td><td class="num">${r.fol}</td><td class="num">${r.hot}</td><td class="num">${r.won}</td><td class="num">${r.lost}</td>
+      <td class="num">${r.recs}</td><td class="num">${r.today}</td>
+      <td><div class="bar"><i style="width:${r.total?Math.round(r.done/r.total*100):0}%"></i></div><span class="hint">${r.total?Math.round(r.done/r.total*100):0}% worked</span></td></tr>`).join('')}
+  </table></div></div>
+  <div class="box"><h4>Call results</h4>${rcs.length ? rcs.map(([k,v]) => `
+    <div style="margin:8px 0"><div style="display:flex;justify-content:space-between;font-size:14px"><span>${esc(k)}</span><b>${v}</b></div><div class="bar"><i style="width:${Math.round(v/max*100)}%"></i></div></div>`).join('')
+    : '<div class="hint">No calls logged yet.</div>'}</div>`;
+}
+async function doAssign(){
+  busy(true);
+  try { const n = await api('runAssign', S.token, $('#incNo').checked); toast(n + ' leads assigned'); await load(); }
+  catch(e){ toast(e.message, true); } finally { busy(false); }
+}
+
+function adminList(){
+  const f = S.af;
+  return S.leads.filter(l =>
+    (f.rep === '' || (f.rep === '__none' ? !l.rep : l.rep === f.rep)) &&
+    (f.status === '' || (f.status === '__due' ? isDue(l) : l.status === f.status)) && matchQ(l, f.q))
+    .sort((a,b) => a.id.localeCompare(b.id));
+}
+function paneLeads(){
+  const f = S.af;
+  $('#pane').innerHTML = `
+  <div class="toolbar">
+    <select class="in" onchange="S.af.rep=this.value;S.sel.clear();renderLeadTable()"><option value="">All reps</option><option value="__none" ${f.rep==='__none'?'selected':''}>Unassigned</option>
+      ${S.reps.map(r => `<option ${f.rep===r.name?'selected':''}>${esc(r.name)}</option>`).join('')}</select>
+    <select class="in" onchange="S.af.status=this.value;S.sel.clear();renderLeadTable()"><option value="">All statuses</option><option value="__due" ${f.status==='__due'?'selected':''}>Follow-up due</option>
+      ${S.statuses.map(s => `<option ${f.status===s?'selected':''}>${s}</option>`).join('')}</select>
+    <input class="in grow" placeholder="Search…" value="${esc(f.q)}" oninput="S.af.q=this.value;renderLeadTable()">
+  </div>
+  <div id="bulk"></div><div id="ltable"></div>`;
+  renderLeadTable();
+}
+function renderLeadTable(){
+  const L = adminList();
+  [...S.sel].forEach(id => { if (!L.some(l => l.id === id)) S.sel.delete(id); });
+  $('#bulk').innerHTML = S.sel.size ? `<div class="bulk"><b>${S.sel.size} selected</b> → assign to
+    <select class="in" id="bulkRep" style="width:auto"><option value="">— Unassigned —</option>${S.reps.filter(r=>r.active).map(r => `<option>${esc(r.name)}</option>`).join('')}</select>
+    <button class="btn sm primary" onclick="doBulk()">Apply</button><button class="btn sm" onclick="S.sel.clear();renderLeadTable()">Clear</button></div>` : '';
+  const all = L.length && L.every(l => S.sel.has(l.id));
+  $('#ltable').innerHTML = `<div class="hint" style="margin-bottom:6px">${L.length} leads</div><div class="tbl"><table>
+    <tr><th><input type="checkbox" ${all?'checked':''} onchange="toggleAll(this.checked)"></th><th>ID</th><th>Business</th><th>Phone</th><th>Rep</th><th>Status</th><th>Last result</th><th>Follow-up</th><th class="num">🎙</th><th>Updated</th></tr>
+    ${L.map(l => `<tr class="click" onclick="openLead('${l.id}')">
+      <td onclick="event.stopPropagation()"><input type="checkbox" ${S.sel.has(l.id)?'checked':''} onchange="toggleSel('${l.id}',this.checked)"></td>
+      <td class="hint">${l.id}</td><td><b>${esc(l.name)}</b><div class="hint">${esc(l.category)}</div></td>
+      <td style="white-space:nowrap">${esc(l.phone) || '<span class="hint">—</span>'}</td><td>${esc(l.rep) || '<span class="hint">—</span>'}</td>
+      <td>${badge(l.status)}</td><td>${esc(l.response)}</td>
+      <td style="white-space:nowrap;color:${isDue(l)?'var(--red)':''}">${fmtDate(l.followUp)}</td>
+      <td class="num">${l.recordings.length || ''}</td><td class="hint" style="white-space:nowrap">${esc(l.updated)}${l.updatedBy?'<br>'+esc(l.updatedBy):''}</td></tr>`).join('')}
+  </table></div>`;
+}
+function toggleSel(id, on){ on ? S.sel.add(id) : S.sel.delete(id); renderLeadTable(); }
+function toggleAll(on){ adminList().forEach(l => on ? S.sel.add(l.id) : S.sel.delete(l.id)); renderLeadTable(); }
+async function doBulk(){
+  const rep = $('#bulkRep').value, ids = [...S.sel];
+  busy(true);
+  try { const n = await api('bulkAssign', S.token, ids, rep); S.leads.forEach(l => { if (S.sel.has(l.id)) l.rep = rep; }); S.sel.clear(); toast(n + ' leads → ' + (rep || 'Unassigned')); renderLeadTable(); }
+  catch(e){ toast(e.message, true); } finally { busy(false); }
+}
+
+function paneAdd(){
+  $('#pane').innerHTML = `<div class="grid2">
+  <div class="box"><h4>Add one lead</h4>
+    <label class="f">Business name *</label><input class="in" id="a_name">
+    <label class="f">Phone</label><input class="in" id="a_phone" inputmode="tel" placeholder="+92 3xx xxxxxxx">
+    <label class="f">Category</label><input class="in" id="a_cat" placeholder="Spice wholesaler">
+    <label class="f">Address</label><input class="in" id="a_addr">
+    <label class="f">Assign to</label><select class="in" id="a_rep"><option value="__auto">Auto (round-robin)</option><option value="">Leave unassigned</option>
+      ${S.reps.filter(r=>r.active).map(r => `<option>${esc(r.name)}</option>`).join('')}</select>
+    <div style="margin-top:14px"><button class="btn primary" onclick="addOne()">Add lead</button></div></div>
+  <div class="box"><h4>Bulk paste</h4>
+    <div class="hint">Copy rows from Google Sheets / Excel and paste here. If you include the header row (e.g. from your Google Maps sheet) columns are matched by name. Without a header, use this order:<br>
+      <b>Business Name · Category · Phone · Address · Rating · Reviews · Review Snippet</b><br>Duplicates (same phone or name) are skipped automatically.</div>
+    <textarea class="in" id="bulkTxt" style="min-height:180px;margin-top:8px;font-family:monospace;font-size:12px" placeholder="Paste rows here…" oninput="previewBulk()"></textarea>
+    <div class="hint" id="bulkPrev" style="margin:6px 0"></div>
+    <label class="hint"><input type="checkbox" id="bulkAuto" checked> Auto-assign to reps after import</label>
+    <div style="margin-top:10px"><button class="btn primary" onclick="addBulk()">Import</button></div></div></div>`;
+}
+function parseBulk(txt){
+  const lines = txt.split(/\r?\n/).filter(x => x.trim());
+  if (!lines.length) return [];
+  let rows = lines.map(x => x.split('\t'));
+  const H = rows[0].map(h => h.trim().toLowerCase());
+  let map = {name:0, category:1, phone:2, address:3, rating:4, reviews:5, snippet:6};
+  if (H.some(h => h.includes('business'))) {
+    const find = (...ks) => H.findIndex(h => ks.some(k => h === k || h.startsWith(k)));
+    map = {name:find('business name','business','name'), category:find('category'), phone:find('phone number','phone','mobile'),
+      address:find('address / location','address','location'), rating:find('rating'), reviews:find('reviews'), snippet:find('review snippet','snippet')};
+    rows = rows.slice(1);
+  }
+  const g = (r,k) => map[k] > -1 ? String(r[map[k]] || '').trim() : '';
+  return rows.map(r => ({name:g(r,'name'), category:g(r,'category'), phone:g(r,'phone'), address:g(r,'address'),
+    rating:g(r,'rating'), reviews:g(r,'reviews'), snippet:g(r,'snippet'), source:'Bulk import'})).filter(o => o.name);
+}
+function previewBulk(){
+  const r = parseBulk($('#bulkTxt').value);
+  $('#bulkPrev').innerHTML = r.length ? `${r.length} rows detected · first: <b>${esc(r[0].name)}</b> · ${esc(r[0].phone || 'no phone')}` : '';
+}
+async function addOne(){
+  const name = $('#a_name').value.trim(); if (!name) return toast('Business name is required', true);
+  const sel = $('#a_rep').value;
+  const row = {name, phone:$('#a_phone').value.trim(), category:$('#a_cat').value.trim(), address:$('#a_addr').value.trim(),
+    source:'Manual', rep: sel === '__auto' ? '' : sel};
+  busy(true);
+  try { const r = await api('addLeads', S.token, [row], sel === '__auto');
+    toast(r.added ? 'Lead added' + (r.assigned ? ' & assigned' : '') : 'Duplicate — already in the list', !r.added);
+    if (r.added) { await load(); } }
+  catch(e){ toast(e.message, true); } finally { busy(false); }
+}
+async function addBulk(){
+  const rows = parseBulk($('#bulkTxt').value);
+  if (!rows.length) return toast('Nothing to import', true);
+  busy(true);
+  try { const r = await api('addLeads', S.token, rows, $('#bulkAuto').checked);
+    toast(`${r.added} added · ${r.skipped} skipped · ${r.assigned} assigned`); await load(); }
+  catch(e){ toast(e.message, true); } finally { busy(false); }
+}
+
+function paneTeam(){
+  S._team = S._team || S.reps.map(r => ({...r}));
+  $('#pane').innerHTML = `<div class="box"><h4>Sales reps</h4>
+    <div class="tbl" style="max-height:none"><table><tr><th>Name</th><th>PIN</th><th>Phone</th><th>Active</th><th></th></tr>
+    ${S._team.map((r,i) => `<tr>
+      <td><input class="in" value="${esc(r.name)}" oninput="S._team[${i}].name=this.value"></td>
+      <td><input class="in" value="${esc(r.pin)}" inputmode="numeric" style="max-width:110px" oninput="S._team[${i}].pin=this.value"></td>
+      <td><input class="in" value="${esc(r.phone)}" oninput="S._team[${i}].phone=this.value"></td>
+      <td><input type="checkbox" ${r.active?'checked':''} onchange="S._team[${i}].active=this.checked"></td>
+      <td><button class="btn sm" onclick="S._team.splice(${i},1);paneTeam()">Remove</button></td></tr>`).join('')}
+    </table></div>
+    <div class="recrow" style="margin-top:10px"><button class="btn" onclick="S._team.push({name:'',pin:'',phone:'',active:true});paneTeam()">+ Add rep</button>
+      <button class="btn primary" onclick="saveTeam()">Save team</button></div>
+    <div class="hint" style="margin-top:8px">Unticking "Active" stops new leads going to that rep and blocks their login. Their existing leads stay with them; move them from <b>All leads</b> (filter by rep → select all → assign).
+    Renaming a rep does not move their leads.</div></div>
+  <div class="box"><h4>Admin PIN</h4><div class="recrow"><input class="in" id="apin" type="password" inputmode="numeric" placeholder="New admin PIN" style="max-width:200px">
+    <button class="btn" onclick="savePin()">Change</button></div></div>`;
+}
+async function saveTeam(){
+  busy(true);
+  try { await api('saveReps', S.token, S._team); S._team = null; toast('Team saved'); await load(); }
+  catch(e){ toast(e.message, true); } finally { busy(false); }
+}
+async function savePin(){
+  busy(true);
+  try { await api('setAdminPin', S.token, $('#apin').value); $('#apin').value = ''; toast('Admin PIN changed'); }
+  catch(e){ toast(e.message, true); } finally { busy(false); }
+}
+
+boot();
+</script>
+</body>
+</html>
