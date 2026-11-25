@@ -135,7 +135,7 @@ const lead = id => S.leads.find(l => l.id === id);
 const statusOf = label => (S.responses.find(r => r.label === label) || {}).status || '';
 function fmtDate(d){ if(!d) return ''; const [y,m,dd]=d.split('-'); return new Date(+y,+m-1,+dd).toLocaleDateString('en-GB',{day:'numeric',month:'short'}); }
 function addDays(n){ const d=new Date(S.today+'T00:00:00'); d.setDate(d.getDate()+n); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-function waNum(p){ let d=digits(p); if(!d) return ''; if(d.startsWith('0')) d='92'+d.slice(1); if(!d.startsWith('92')) d='92'+d; return /^923\d{9}$/.test(d) ? d : ''; }
+function waNum(p){ const d = phoneKey(p); return /^923\d{9}$/.test(d) ? d : ''; }
 function toast(m, err){ const t=$('#toast'); t.textContent=m; t.className=err?'err':''; t.style.display='block'; clearTimeout(t._h); t._h=setTimeout(()=>t.style.display='none', err?4500:2200); }
 function busy(on){ $('#busy').style.display = on ? 'flex' : 'none'; }
 function store(k,v){ try{ v===null?localStorage.removeItem(k):localStorage.setItem(k,v); }catch(e){} }
@@ -449,7 +449,7 @@ function paneDash(){
   <div class="box"><h4>Team performance</h4><div class="tbl" style="max-height:none"><table>
     <tr><th>Rep</th><th class="num">Assigned</th><th class="num">Not called</th><th class="num">Due</th><th class="num">Follow-up</th><th class="num">Interested</th><th class="num">Won</th><th class="num">Lost/Dead</th><th class="num">🎙</th><th class="num">Calls today</th><th style="min-width:110px">Progress</th></tr>
     ${rows.map((r,i) => `<tr class="click" onclick="S.tab='leads';S.af={rep:S._dashReps[${i}],status:'',q:''};renderAdmin()">
-      <td><b>${esc(r.name)}</b>${r.active===false?' <span class="hint">(inactive)</span>':''}</td><td class="num">${r.total}</td><td class="num">${r.fresh}</td>
+      <td><b>${esc(r.name)}</b>${r.active===false?' <span class="hint">(inactive)</span>':''}${r.active===undefined?' <span class="hint" style="color:var(--red)">(not in team — reassign these)</span>':''}</td><td class="num">${r.total}</td><td class="num">${r.fresh}</td>
       <td class="num" style="color:${r.due?'var(--red)':''}">${r.due}</td><td class="num">${r.fol}</td><td class="num">${r.hot}</td><td class="num">${r.won}</td><td class="num">${r.lost}</td>
       <td class="num">${r.recs}</td><td class="num">${r.today}</td>
       <td><div class="bar"><i style="width:${r.total?Math.round(r.done/r.total*100):0}%"></i></div><span class="hint">${r.total?Math.round(r.done/r.total*100):0}% worked</span></td></tr>`).join('')}
@@ -464,6 +464,7 @@ async function doAssign(){
   catch(e){ toast(e.message, true); } finally { busy(false); }
 }
 
+function repNames(){ const n = S.reps.map(r => r.name); S.leads.forEach(l => { if (l.rep && !n.includes(l.rep)) n.push(l.rep); }); return n; }
 function adminList(){
   const f = S.af;
   return S.leads.filter(l =>
@@ -476,7 +477,7 @@ function paneLeads(){
   $('#pane').innerHTML = `
   <div class="toolbar">
     <select class="in" onchange="S.af.rep=this.value;S.sel.clear();renderLeadTable()"><option value="">All reps</option><option value="__none" ${f.rep==='__none'?'selected':''}>Unassigned</option>
-      ${S.reps.map(r => `<option ${f.rep===r.name?'selected':''}>${esc(r.name)}</option>`).join('')}</select>
+      ${repNames().map(n => `<option ${f.rep===n?'selected':''}>${esc(n)}</option>`).join('')}</select>
     <select class="in" onchange="S.af.status=this.value;S.sel.clear();renderLeadTable()"><option value="">All statuses</option><option value="__due" ${f.status==='__due'?'selected':''}>Follow-up due</option>
       ${S.statuses.map(s => `<option ${f.status===s?'selected':''}>${s}</option>`).join('')}</select>
     <input class="in grow" placeholder="Search…" value="${esc(f.q)}" oninput="S.af.q=this.value;renderLeadTable()">
@@ -546,9 +547,17 @@ function parseBulk(txt){
     rating:g(r,'rating'), reviews:g(r,'reviews'), snippet:g(r,'snippet'), source:'Bulk import'})).filter(o => o.name);
 }
 function previewBulk(){
-  const r = parseBulk($('#bulkTxt').value);
-  $('#bulkPrev').innerHTML = r.length ? `${r.length} rows detected · first: <b>${esc(r[0].name)}</b> · ${esc(r[0].phone || 'no phone')}` : '';
+  const r = parseBulk($('#bulkTxt').value), el = $('#bulkPrev');
+  if (!r.length) { el.innerHTML = ''; return; }
+  const have = new Set(S.leads.map(l => phoneKey(l.phone) || 'n:' + l.name.trim().toLowerCase()));
+  const dup = r.filter(o => have.has(phoneKey(o.phone) || 'n:' + o.name.trim().toLowerCase())).length;
+  el.innerHTML = `<b>${r.length}</b> rows found · <b>${r.length - dup}</b> new · ${dup} already in the list (will be skipped)
+    <div class="tbl" style="max-height:220px;margin-top:6px"><table><tr><th>Business</th><th>Category</th><th>Phone</th><th>Address</th></tr>
+    ${r.slice(0, 8).map(o => `<tr><td>${esc(o.name)}</td><td>${esc(o.category)}</td><td>${esc(o.phone) || '<span class="hint">—</span>'}</td><td>${esc(o.address)}</td></tr>`).join('')}
+    </table></div>${r.length > 8 ? `<div class="hint">…and ${r.length - 8} more</div>` : ''}
+    <div class="hint">Check the columns look right before importing.</div>`;
 }
+function phoneKey(p){ let d = digits(p); if (!d) return ''; if (d.startsWith('0092')) d = d.slice(2); if (!d.startsWith('92')) d = d.startsWith('0') ? '92' + d.slice(1) : '92' + d; return d; }
 async function addOne(){
   const name = $('#a_name').value.trim(); if (!name) return toast('Business name is required', true);
   const sel = $('#a_rep').value;
@@ -557,7 +566,7 @@ async function addOne(){
   busy(true);
   try { const r = await api('addLeads', S.token, [row], sel === '__auto');
     toast(r.added ? 'Lead added' + (r.assigned ? ' & assigned' : '') : 'Duplicate — already in the list', !r.added);
-    if (r.added) { await load(); } }
+    if (r.added) { await load(); toast('Lead added' + (r.assigned ? ' & assigned' : '')); } }
   catch(e){ toast(e.message, true); } finally { busy(false); }
 }
 async function addBulk(){
@@ -565,12 +574,12 @@ async function addBulk(){
   if (!rows.length) return toast('Nothing to import', true);
   busy(true);
   try { const r = await api('addLeads', S.token, rows, $('#bulkAuto').checked);
-    toast(`${r.added} added · ${r.skipped} skipped · ${r.assigned} assigned`); await load(); }
+    toast(`${r.added} added · ${r.skipped} duplicates skipped · ${r.assigned} assigned`); await load(); }
   catch(e){ toast(e.message, true); } finally { busy(false); }
 }
 
 function paneTeam(){
-  S._team = S._team || S.reps.map(r => ({...r}));
+  S._team = S._team || S.reps.map(r => ({...r, orig:r.name}));
   $('#pane').innerHTML = `<div class="box"><h4>Sales reps</h4>
     <div class="tbl" style="max-height:none"><table><tr><th>Name</th><th>PIN</th><th>Phone</th><th>Active</th><th></th></tr>
     ${S._team.map((r,i) => `<tr>
@@ -583,13 +592,13 @@ function paneTeam(){
     <div class="recrow" style="margin-top:10px"><button class="btn" onclick="S._team.push({name:'',pin:'',phone:'',active:true});paneTeam()">+ Add rep</button>
       <button class="btn primary" onclick="saveTeam()">Save team</button></div>
     <div class="hint" style="margin-top:8px">Unticking "Active" stops new leads going to that rep and blocks their login. Their existing leads stay with them; move them from <b>All leads</b> (filter by rep → select all → assign).
-    Renaming a rep does not move their leads.</div></div>
+    Renaming a rep moves their leads to the new name automatically.</div></div>
   <div class="box"><h4>Admin PIN</h4><div class="recrow"><input class="in" id="apin" type="password" inputmode="numeric" placeholder="New admin PIN" style="max-width:200px">
     <button class="btn" onclick="savePin()">Change</button></div></div>`;
 }
 async function saveTeam(){
   busy(true);
-  try { await api('saveReps', S.token, S._team); S._team = null; toast('Team saved'); await load(); }
+  try { const moved = await api('saveReps', S.token, S._team); S._team = null; toast('Team saved' + (moved ? ` · ${moved} leads moved to renamed reps` : '')); await load(); }
   catch(e){ toast(e.message, true); } finally { busy(false); }
 }
 async function savePin(){
