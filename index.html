@@ -134,6 +134,27 @@ tr.click:hover td{background:#f7f9fc;cursor:pointer}
 .lb .rk{width:18px;color:var(--mute);font-weight:700}.lb .nm{width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lb .ct{width:24px;text-align:right}.lb .td{width:64px;text-align:right}
 @media(max-width:420px){.og{padding:10px;font-size:14px}.og .oi{font-size:18px}.lb .td{display:none}}
+header.top.slim{padding:10px 14px}
+.bar.tg{height:6px;margin-top:6px;background:rgba(255,255,255,.2);max-width:260px}.bar.tg i{background:#7dd3a8}
+.compact .box{padding:10px 12px;margin-bottom:8px}
+.compact .box h4{margin-bottom:8px}
+.compact .leadcard .lname{font-size:18px;line-height:1.2}
+.compact .actions{margin:10px 0 0}
+.compact .actions .btn{padding:10px 8px}
+.og.swap{flex-direction:column;align-items:stretch;gap:6px;padding:8px;cursor:default}
+.swh{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.x{border:0;background:rgba(0,0,0,.06);border-radius:8px;width:26px;height:26px;font-size:13px;color:inherit}
+.og.swap .sb{width:100%;border-radius:10px;padding:9px 8px}
+.furow{font-size:13px;color:var(--mute);margin-top:10px;display:flex;gap:6px;align-items:center}
+.lnk{border:0;background:none;color:var(--blue);font-weight:600;padding:0 4px;text-decoration:underline}
+.notice{background:#fff5f5;border:1px solid #f3c2c2;color:var(--red);border-radius:10px;padding:8px 10px;font-size:13px;margin-bottom:6px}
+.tstats{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;margin-top:3px;color:#444}
+.earn{color:var(--green);font-weight:700}
+table.lbt{background:none;font-size:14px}table.lbt th,table.lbt td{padding:6px 6px;border-bottom:1px solid var(--line)}
+table.lbt th{background:none;position:static}table.lbt tr.me td{background:#eef6fe}table.lbt tr.tot td{font-weight:800;border-top:2px solid var(--ink);border-bottom:0}
+table.lbt{font-size:13px}table.lbt td,table.lbt th{padding:6px 4px}table.lbt th{font-size:11px;white-space:nowrap}
+.cp{border:1px solid var(--line);background:#fff;border-radius:6px;padding:1px 5px;font-size:12px;cursor:pointer;vertical-align:middle}
+.cp:hover{background:#eaf1f8}
 /* misc */
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16202c;color:#fff;padding:10px 16px;border-radius:10px;z-index:99;display:none;max-width:90vw;font-size:14px}
 #toast.err{background:var(--red)}
@@ -152,7 +173,12 @@ tr.click:hover td{background:#f7f9fc;cursor:pointer}
 <script>
 /* ===== Settings you may edit ===== */
 const API_URL = "https://script.google.com/macros/s/AKfycbyIXLq2uho852EXufu40nFn7O8kPfT92iZwqz1YQfm9dBef-Nl3dRWSE_fhcnGyHsuL/exec";
-const WA_TEMPLATE = "Assalam-o-Alaikum!\n\nI am {rep}, a Business Development Representative at The RBs Solutions. I'd like to introduce Luma ERP, our all-in-one business management software built on a Python framework trusted by 10,000+ companies worldwide.\n\nStreamline your accounting, inventory, sales and operations in one place with zero per-user licensing fees, for only Rs. 7,500/month.\n\nFree trial for 1 week available.";
+const WA_TEMPLATE = "Assalam-o-Alaikum!\n\nI am a Business Development Representative at The RBs Solutions. I'd like to introduce Luma ERP, our all-in-one business management software built on a Python framework trusted by 10,000+ companies worldwide.\n\nStreamline your accounting, inventory, sales and operations in one place with zero per-user licensing fees, for only Rs. 7,500/month.\n\nFree trial for 1 week available.";
+const ADMIN_WA_TEMPLATE = "Assalam-o-Alaikum!\n\nI am Rameez Butt, Owner of The RBs Solutions. Hum ap keh demo par kaam kar raheh hai, Insha'Allah, kaal subah ap kouh send kardeh geh demo of our Luma ERP Software.";
+const COMMISSION_PER_LEAD = 500;  // Rs per closed deal (status Won)
+
+const DAILY_TARGET = 20;          // calls per rep per day
+const IDLE_MINUTES = 30;          // auto logout after this much inactivity
 
 /* ===== State ===== */
 const DONE_ST = ['Won','Lost','Dead'];
@@ -194,17 +220,29 @@ function api(fn, ...args){
 /* ===== Auth ===== */
 async function boot(){
   const saved = getStore('ld_session');
-  if (saved) { try { Object.assign(S, JSON.parse(saved)); await load(); return; } catch(e){} }
+  const idle = Date.now() - Number(getStore('ld_active') || 0) > IDLE_MINUTES * 60000;
+  if (saved && idle) { store('ld_session', null); }
+  else if (saved) { try { Object.assign(S, JSON.parse(saved)); touch(true); await load(); return; } catch(e){} }
   showLogin();
 }
-async function showLogin(){
+async function showLogin(msg){
   closeLead();
   const last = getStore('ld_last') || '';
   $('#app').innerHTML = `<div class="login"><div class="card"><h1>Luma ERP Marketing</h1><p>Sales team login</p>
+    ${msg ? `<div class="notice">${esc(msg)}</div>` : ''}
     <label class="f">Your name</label><input class="in" id="lname" autocomplete="username" autocapitalize="words" value="${esc(last)}" placeholder="Type your name" onkeydown="if(event.key==='Enter')$('#lpin').focus()">
     <label class="f">PIN</label><input class="in" id="lpin" type="password" inputmode="numeric" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
-    <div style="margin-top:16px"><button class="btn primary" style="width:100%" onclick="doLogin()">Log in</button></div></div></div>`;
+    <div style="margin-top:16px"><button class="btn primary" style="width:100%" onclick="doLogin()">Log in</button></div>
+    <button class="btn" style="width:100%;margin-top:10px" onclick="showBoard(this)">🏆 Top performers</button></div>
+    <div id="loginBoard"></div></div>`;
   (last ? $('#lpin') : $('#lname')).focus();
+}
+async function showBoard(btn){
+  const el = $('#loginBoard');
+  if (el.innerHTML) { el.innerHTML = ''; return; }
+  btn.disabled = true;
+  try { S.board = await api('publicBoard'); el.innerHTML = `<div style="margin-top:12px">${boardHTML()}</div>`; }
+  catch(e){ toast(e.message, true); } finally { btn.disabled = false; }
 }
 async function doLogin(){
   const name = $('#lname').value.trim(), pin = $('#lpin').value.trim();
@@ -216,15 +254,32 @@ async function doLogin(){
     Object.assign(S, r);
     store('ld_session', JSON.stringify({token:r.token, role:r.role, name:r.name}));
     store('ld_last', name);
+    touch(true);
     await load();
   } catch(e){ toast(e.message, true); } finally { busy(false); }
 }
-function doLogout(silent){
+function doLogout(silent, msg){
+  stopStream();
   if (!silent && S.token) api('logout', S.token).catch(() => {});
   store('ld_session', null);
-  S.token = null; S.role = null; S.leads = [];
-  showLogin();
+  S.token = null; S.role = null; S.leads = []; S.open = null;
+  showLogin(msg);
 }
+/* auto logout after inactivity */
+let _lastTouch = 0;
+function touch(force){ const n = Date.now(); if (force || n - _lastTouch > 10000) { _lastTouch = n; store('ld_active', String(n)); } }
+['click','keydown','touchstart','input'].forEach(ev => document.addEventListener(ev, () => S.token && touch(), {passive:true}));
+function idleCheck(){
+  if (!S.token) return;
+  if (rec.mr && rec.mr.state === 'recording') return touch(true);
+  if (Date.now() - Number(getStore('ld_active') || 0) > IDLE_MINUTES * 60000) doLogout(false, `Logged out after ${IDLE_MINUTES} minutes of no activity.`);
+}
+setInterval(idleCheck, 30000);
+/* working-time heartbeat (reps only) */
+function beat(){ if (S.token && S.role === 'rep' && !document.hidden) api('ping', S.token).catch(() => {}); }
+setInterval(beat, 120000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) beat(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) idleCheck(); });
 
 /* ===== Data ===== */
 async function load(){
@@ -253,7 +308,7 @@ const PICKERS = ['Boss / Owner', 'Other (staff)'];
 const needsPicker = d => d.group === 'neg' || d.group === 'send';
 const draftReady = d => !!d.response && (!needsPicker(d) || !!d.picked);
 
-function newDraft(l){ return {group:'', response:'', picked:'', note:'', followUp:l.followUp || '', rep:l.rep, status:l.status}; }
+function newDraft(l){ S.showFu = false; return {group:'', response:'', picked:'', note:'', followUp:l.followUp || '', rep:l.rep, status:l.status}; }
 
 function matchQ(l, q){ q = q.trim().toLowerCase(); if (!q) return true;
   return [l.name, l.phone, l.category, l.address, l.id].join(' ').toLowerCase().includes(q) || (digits(q) && digits(l.phone).includes(digits(q))); }
@@ -268,15 +323,33 @@ function repQueue(){
 function boardHTML(){
   const B = S.board || [];
   if (!B.length) return '';
-  const top = B[0], max = Math.max(1, top.interested);
-  return `<div class="box board"><h4>🏆 Leaderboard · interested leads</h4>
-    ${top.interested ? `<div class="topp"><span class="crown">🥇</span><div><b>${esc(cap(top.name))}</b> is the top performer<div class="hint">${top.interested} interested · ${top.today} today</div></div></div>` : '<div class="hint">No interested leads yet — be the first!</div>'}
-    ${B.map((r,i) => `<div class="lb ${S.role==='rep' && r.name===S.name ? 'me' : ''}">
-      <span class="rk">${i+1}</span><span class="nm">${esc(cap(r.name))}</span>
-      <div class="bar" style="flex:1"><i style="width:${Math.round(r.interested/max*100)}%"></i></div>
-      <b class="ct">${r.interested}</b><span class="hint td">+${r.today} today</span></div>`).join('')}
+  const rs = n => 'Rs ' + (n * COMMISSION_PER_LEAD).toLocaleString('en-PK');
+  const hm = m => { m = Math.round(m || 0); return Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0'); };
+  const T = B.reduce((a, r) => ({today:a.today+r.today, interested:a.interested+r.interested, closed:a.closed+r.closed, minutes:a.minutes+(r.minutes||0)}), {today:0, interested:0, closed:0, minutes:0});
+  const top = B[0];
+  return `<div class="box board"><h4>🏆 Top performers</h4>
+    ${top.closed || top.interested ? `<div class="topp"><span class="crown">🥇</span><div style="flex:1"><b>${esc(cap(top.name))}</b> is the top performer
+        <div class="tstats"><span><b>${top.closed}</b> closed</span><span><b>${top.interested}</b> interested</span><span class="earn">${rs(top.closed)} earned</span></div></div></div>`
+      : '<div class="hint" style="margin-bottom:6px">No interested clients yet — be the first!</div>'}
+    <div style="overflow-x:auto"><table class="lbt"><tr><th>#</th><th>Name</th><th class="num" title="Interested today">Today</th><th class="num" title="Interested total">Int.</th><th class="num">Closed</th><th class="num" title="Commission (Rs)">Rs</th><th class="num" title="Hours worked">Hrs</th></tr>
+    ${B.map((r,i) => `<tr class="${S.role==='rep' && r.name===S.name ? 'me' : ''}"><td class="hint">${i+1}</td><td><b>${esc(cap(r.name))}</b></td>
+      <td class="num">${r.today}</td><td class="num">${r.interested}</td><td class="num"><b>${r.closed}</b></td>
+      <td class="num earn">${(r.closed*COMMISSION_PER_LEAD).toLocaleString('en-PK')}</td><td class="num" title="today ${hm(r.minutesToday)}">${hm(r.minutes)}</td></tr>`).join('')}
+    <tr class="tot"><td></td><td>Total</td><td class="num">${T.today}</td><td class="num">${T.interested}</td><td class="num">${T.closed}</td><td class="num earn">${(T.closed*COMMISSION_PER_LEAD).toLocaleString('en-PK')}</td><td class="num">${hm(T.minutes)}</td></tr>
+    </table></div>
+    <div class="hint" style="margin-top:6px">Today/Int. = interested clients · Rs = commission (Rs ${COMMISSION_PER_LEAD} per closed deal) · Hrs = time worked (h:mm)</div>
   </div>`;
 }
+function copyText(t, what){
+  const done = () => toast((what || 'Text') + ' copied: ' + t);
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(done, () => fallbackCopy(t, done));
+  else fallbackCopy(t, done);
+}
+function fallbackCopy(t, done){
+  const ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch(e){ toast('Copy failed', true); } ta.remove();
+}
+const cpBtn = (t, what) => `<button class="cp" title="Copy ${what}" data-c="${esc(t)}" onclick="event.stopPropagation();copyText(this.dataset.c,'${what}')">📋</button>`;
 const cap = s => String(s||'').replace(/\b\w/g, c => c.toUpperCase());
 
 function renderRep(){
@@ -284,38 +357,40 @@ function renderRep(){
   let l = Q.find(x => x.id === S.open) || Q[0];
   if (l && S.open !== l.id) { S.open = l.id; S.draft = newDraft(l); resetRec(); }
   if (!l) S.open = null;
-  const interested = S.leads.filter(x => x.status === 'Interested' || x.status === 'Won').length;
+  const done = S.myCalls || 0, n = done + 1, hit = done >= DAILY_TARGET;
+  const pct = Math.min(100, Math.round(done / DAILY_TARGET * 100));
   const nextFu = S.leads.filter(x => x.followUp && !DONE_ST.includes(x.status) && x.followUp > S.today).map(x => x.followUp).sort()[0];
   $('#app').innerHTML = `
-  <header class="top"><div><div class="hi">${esc(cap(S.name))}</div>
-    <div class="sub">${Q.length} to call · ${S.myCalls||0} calls today · ${interested} interested</div></div>
+  <header class="top slim"><div style="flex:1">
+      <div class="hi">${hit ? `🎯 Target done · ${done} calls` : `Today: ${Math.min(n, DAILY_TARGET)} of ${DAILY_TARGET}`}</div>
+      <div class="bar tg"><i style="width:${pct}%"></i></div></div>
     <div style="white-space:nowrap"><button class="icon" onclick="load()" title="Refresh">⟳</button><button class="icon" onclick="doLogout()">Logout</button></div></header>
-  <div class="wrap narrow">
-    ${l ? `<div class="pos">Lead ${Q.indexOf(l)+1} of ${Q.length}${isDue(l) ? ' · <b style="color:var(--red)">Follow-up due</b>' : ''}</div>
-      <div id="leadpane">${leadBody(l)}</div>
+  <div class="wrap narrow compact">
+    ${l ? `<div id="leadpane">${leadBody(l)}</div>
       <div class="stickyfoot"><button class="btn primary" id="savebtn" onclick="saveLead(true)">Save & next →</button></div>`
-    : `<div class="box empty"><div style="font-size:40px">🎉</div><b>All done for now!</b>
-        <div class="hint" style="margin-top:6px">${nextFu ? 'Next follow-ups on ' + fmtDate(nextFu) + '.' : 'No more leads assigned to you.'} Tap ⟳ to check for new leads.</div></div>`}
-    ${boardHTML()}
+    : `<div class="box empty"><div style="font-size:40px">🎉</div><b>No more numbers right now</b>
+        <div class="hint" style="margin-top:6px">${nextFu ? 'Next follow-ups on ' + fmtDate(nextFu) + '.' : 'Ask admin for new leads.'} Tap ⟳ to check again.</div></div>`}
   </div>`;
   if (l) { renderCards(); renderRec(); }
 }
+
 /* ===== Shared lead body (rep screen + admin drawer) ===== */
 function leadBody(l){
   const d = S.draft, wa = waNum(l.phone), admin = S.role === 'admin';
-  const repName = admin ? 'Rameez Butt' : cap(S.name);
-  const msg = encodeURIComponent(WA_TEMPLATE.replace('{rep}', repName).replace('{business}', l.name));
+  const msg = encodeURIComponent(admin ? ADMIN_WA_TEMPLATE.replace('{business}', l.name)
+                                       : WA_TEMPLATE.replace('{rep}', cap(S.name)).replace('{business}', l.name));
   return `
     <div class="box leadcard">
-      <div class="r1"><div><div class="lname">${esc(l.name)}</div><div class="hint">${l.id} · ${esc(l.category)}</div></div>${badge(l.status)}</div>
-      <div class="actions" style="margin:12px 0 8px">
+      <div class="r1"><div style="min-width:0"><div class="lname">${esc(l.name)}${admin ? ' ' + cpBtn(l.name,'Name') : ''}</div><div class="hint">${esc(l.category)}${admin && l.phone ? ' · ' + esc(l.phone) + ' ' + cpBtn(l.phone,'Number') : ''}</div></div>
+        ${isDue(l) ? '<span class="badge st-Lost">Follow-up due</span>' : badge(l.status)}</div>
+      <div class="actions">
         ${l.phone ? `<a class="btn call" ${IN_GAS?'target="_blank"':''} href="tel:${digits(l.phone).replace(/^92/,'+92')}">📞 ${esc(l.phone)}</a>` : `<span class="btn" style="flex:1">No phone number</span>`}
         ${wa ? `<a class="btn wa" target="_blank" href="https://wa.me/${wa}?text=${msg}">WhatsApp</a>` : ''}
       </div>
-      ${l.address ? `<div class="kv"><b>Address</b>${esc(l.address)}</div>` : ''}
-      ${l.rating!=='' ? `<div class="kv"><b>Google</b>★ ${l.rating} · ${l.reviews} reviews</div>` : ''}
-      <div class="kv"><b>Attempts</b>${l.attempts}${l.updated ? ` · last ${esc(l.updated)} by ${esc(l.updatedBy)}` : ''}</div>
-      ${l.snippet ? `<div class="quote">“${esc(l.snippet)}”</div>` : ''}
+      ${admin ? `${l.address ? `<div class="kv"><b>Address</b>${esc(l.address)}</div>` : ''}
+        ${l.rating!=='' ? `<div class="kv"><b>Google</b>★ ${l.rating} · ${l.reviews} reviews</div>` : ''}
+        <div class="kv"><b>Attempts</b>${l.attempts}${l.updated ? ` · last ${esc(l.updated)} by ${esc(l.updatedBy)}` : ''}</div>
+        ${l.snippet ? `<div class="quote">“${esc(l.snippet)}”</div>` : ''}` : ''}
     </div>
     ${admin ? `<div class="box"><h4>Admin</h4><div class="grid2">
       <div><label class="f" style="margin-top:0">Assigned to</label><select class="in" onchange="S.draft.rep=this.value">
@@ -324,7 +399,7 @@ function leadBody(l){
         ${S.statuses.map(s => `<option ${s===d.status?'selected':''}>${s}</option>`).join('')}</select></div></div></div>` : ''}
     <div id="cards"></div>
     <div class="box"><h4>Note & voice <span class="opt">optional</span></h4>
-      <textarea class="in" placeholder="Anything worth remembering…" oninput="S.draft.note=this.value">${esc(d.note)}</textarea>
+      <textarea class="in" rows="2" placeholder="Anything worth remembering…" oninput="S.draft.note=this.value">${esc(d.note)}</textarea>
       <div id="recbox" style="margin-top:10px"></div>
       ${l.recordings.length ? `<div class="recs" style="margin-top:10px">${l.recordings.slice().reverse().map(r => `
         <div class="ri"><span>🎙 ${esc(r.at)} · ${esc(r.by)}</span><button class="btn sm" onclick="playRec('${r.id}', this)">▶ Play</button></div>`).join('')}
@@ -336,28 +411,25 @@ function leadBody(l){
 function renderCards(){
   const box = $('#cards'); if (!box) return;
   const d = S.draft, g = d.group;
-  const sub = key => GROUPS[key].subs.map(([t,v]) =>
-    `<button class="sb ${GROUPS[key].cls} ${d.response===v?'on':''}" onclick="pickSub('${key}','${v}')">${t}</button>`).join('');
   const grp = key => { const G = GROUPS[key];
+    if (g === key && G.subs.length) return `<div class="og ${G.cls} on swap">
+        <div class="swh"><span>${G.icon} ${G.label}</span><button class="x" onclick="pickGroup('${key}')" title="Back">✕</button></div>
+        ${G.subs.map(([t,v]) => `<button class="sb ${G.cls} ${d.response===v?'on':''}" onclick="pickSub('${key}','${v}')">${t}</button>`).join('')}
+      </div>`;
     return `<button class="og ${G.cls} ${g===key?'on':''}" onclick="pickGroup('${key}')"><span class="oi">${G.icon}</span><span>${G.label}<small>${G.hint}</small></span></button>`; };
+  const off = g === 'noresp', need = needsPicker(d) && !d.picked;
+  const fu = (g === 'noresp' || g === 'send') ? `<div class="furow">📅 Follow-up: <b>${d.followUp ? fmtDate(d.followUp) : 'none'}</b>
+      <button class="lnk" onclick="S.showFu=!S.showFu;renderCards()">${S.showFu ? 'done' : 'change'}</button></div>
+      ${S.showFu ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+        <input class="in" id="fu" type="date" style="flex:1;min-width:140px" value="${d.followUp}" onchange="S.draft.followUp=this.value;renderCards()">
+        <button class="btn sm" onclick="setFu(1)">Tomorrow</button><button class="btn sm" onclick="setFu(3)">+3d</button><button class="btn sm" onclick="setFu(7)">+1w</button><button class="btn sm" onclick="setFu(0,true)">Clear</button></div>` : ''}` : '';
   box.innerHTML = `
     <div class="box"><h4>1 · Call result</h4>
-      <div class="mc">
-        <div class="mcl">
-          ${grp('noresp')}${g==='noresp' ? `<div class="subs">${sub('noresp')}</div>` : ''}
-          ${grp('neg')}${g==='neg' ? `<div class="subs">${sub('neg')}</div>` : ''}
-        </div>
-        <div class="mcr">${grp('send')}</div>
-      </div>
-      ${g==='noresp' || g==='send' ? `<label class="f">Follow-up date</label>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <input class="in" id="fu" type="date" style="flex:1;min-width:140px" value="${d.followUp}" onchange="S.draft.followUp=this.value">
-          <button class="btn sm" onclick="setFu(1)">Tomorrow</button><button class="btn sm" onclick="setFu(3)">+3d</button><button class="btn sm" onclick="setFu(7)">+1w</button><button class="btn sm" onclick="setFu(0,true)">Clear</button>
-        </div>` : ''}
+      <div class="mc"><div class="mcl">${grp('noresp')}${grp('neg')}</div><div class="mcr">${grp('send')}</div></div>
+      ${fu}
     </div>
-    ${(() => { const off = d.group === 'noresp', need = needsPicker(d) && !d.picked;
-      return `<div class="box ${off ? 'off' : need ? 'need' : ''}"><h4>2 · Who picked up? ${off ? '<span class="opt">not needed — no answer</span>' : '<span class="req">required</span>'}</h4>
-      <div class="pick">${PICKERS.map(p => `<button ${off ? 'disabled' : ''} class="${d.picked===p?'on':''}" onclick="pickWho('${p}')">${p.startsWith('Boss')?'👔':'🧑‍💼'} ${p}</button>`).join('')}</div></div>`; })()}`;
+    <div class="box ${off ? 'off' : need ? 'need' : ''}"><h4>2 · Who picked up? ${off ? '<span class="opt">not needed — no answer</span>' : '<span class="req">required</span>'}</h4>
+      <div class="pick">${PICKERS.map(p => `<button ${off ? 'disabled' : ''} class="${d.picked===p?'on':''}" onclick="pickWho('${p}')">${p.startsWith('Boss')?'👔':'🧑‍💼'} ${p}</button>`).join('')}</div></div>`;
   const sb = $('#savebtn'); if (sb) sb.disabled = !draftReady(d);
 }
 function pickGroup(key){
@@ -372,7 +444,7 @@ function pickGroup(key){
 }
 function pickSub(key, v){ S.draft.group = key; S.draft.response = S.draft.response === v ? '' : v; renderCards(); }
 function pickWho(p){ S.draft.picked = S.draft.picked === p ? '' : p; renderCards(); }
-function setFu(n, clear){ S.draft.followUp = clear ? '' : addDays(n); const f = $('#fu'); if (f) f.value = S.draft.followUp; }
+function setFu(n, clear){ S.draft.followUp = clear ? '' : addDays(n); renderCards(); }
 
 /* ===== Admin drawer ===== */
 function openLead(id){
@@ -586,8 +658,8 @@ function renderLeadTable(){
     <tr><th><input type="checkbox" ${all?'checked':''} onchange="toggleAll(this.checked)"></th><th>ID</th><th>Business</th><th>Phone</th><th>Rep</th><th>Status</th><th>Last result</th><th>Follow-up</th><th class="num">🎙</th><th>Updated</th></tr>
     ${L.map(l => `<tr class="click" onclick="openLead('${l.id}')">
       <td onclick="event.stopPropagation()"><input type="checkbox" ${S.sel.has(l.id)?'checked':''} onchange="toggleSel('${l.id}',this.checked)"></td>
-      <td class="hint">${l.id}</td><td><b>${esc(l.name)}</b><div class="hint">${esc(l.category)}</div></td>
-      <td style="white-space:nowrap">${esc(l.phone) || '<span class="hint">—</span>'}</td><td>${esc(l.rep) || '<span class="hint">—</span>'}</td>
+      <td class="hint">${l.id}</td><td><b>${esc(l.name)}</b> ${cpBtn(l.name,'Name')}<div class="hint">${esc(l.category)}</div></td>
+      <td style="white-space:nowrap">${l.phone ? esc(l.phone) + ' ' + cpBtn(l.phone,'Number') : '<span class="hint">—</span>'}</td><td>${esc(l.rep) || '<span class="hint">—</span>'}</td>
       <td>${badge(l.status)}</td><td>${esc(l.response)}</td>
       <td style="white-space:nowrap;color:${isDue(l)?'var(--red)':''}">${fmtDate(l.followUp)}</td>
       <td class="num">${l.recordings.length || ''}</td><td class="hint" style="white-space:nowrap">${esc(l.updated)}${l.updatedBy?'<br>'+esc(l.updatedBy):''}</td></tr>`).join('')}
